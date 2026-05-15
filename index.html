@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Reader Polyglot - Adaptive AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease, background-image 0.5s ease; }
+        
+        .loading-shimmer { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .blur-text { filter: blur(6px); user-select: none; transition: filter 0.3s ease; cursor: pointer; }
+        .blur-text:hover { filter: blur(3px); }
+        .blur-text.revealed { filter: none; }
+
+        .mode-tantangan .word-highlight { background-color: #334155 !important; color: transparent !important; border-bottom: none !important; border-radius: 0.375rem; user-select: none; transition: all 0.3s ease; }
+        .mode-tantangan .word-highlight:hover { background-color: #fef08a !important; color: #1d4ed8 !important; }
+        .mode-tantangan .word-highlight.revealed { background-color: #dcfce7 !important; color: #166534 !important; }
+        .mode-tantangan .hide-in-challenge { display: none !important; }
+
+        .roleplay-active-line { transform: scale(1.02); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); border-color: #818cf8 !important; background-color: #eef2ff !important; }
+        .roleplay-dim { opacity: 0.4; filter: grayscale(100%); }
+
+        .mode-teater { background-color: #0f172a !important; border-color: #1e293b !important; color: #f8fafc !important; }
+        .mode-teater .dialog-row { background-color: rgba(15, 23, 42, 0.4) !important; border-color: transparent !important; transition: all 0.4s ease; opacity: 0.3; backdrop-filter: blur(4px); }
+        .mode-teater .dialog-row.karaoke-active { opacity: 1; transform: scale(1.03); background-color: rgba(30, 41, 59, 0.7) !important; border-left: 4px solid #3b82f6 !important; backdrop-filter: blur(8px); }
+        .mode-teater .text-slate-800 { color: #ffffff !important; font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.9); }
+        .mode-teater .phonetic-text { color: #a78bfa !important; font-style: italic; text-shadow: 1px 1px 2px rgba(0,0,0,0.9); }
+        .mode-teater .translation { color: #fde047 !important; font-size: 1.1rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.9); display: block !important; }
+        .mode-teater .word-highlight { color: #93c5fd !important; border-bottom-color: #3b82f6 !important; background: rgba(59, 130, 246, 0.2) !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        
+        .mode-teater .scene-box-bg { background-color: rgba(15, 23, 42, 0.75) !important; border-color: rgba(51, 65, 85, 0.8) !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px); }
+        .mode-teater .theater-accent { color: #94a3b8 !important; }
+        .mode-teater .theater-text { color: #e2e8f0 !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+
+        .mic-listening { background-color: #ef4444 !important; color: white !important; animation: pulse-red 1.5s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        
+        .waveform { display: flex; align-items: center; gap: 3px; height: 20px; }
+        .wave-bar { width: 4px; background-color: #ef4444; border-radius: 2px; animation: wave 1s infinite ease-in-out; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes wave { 0%, 100% { height: 4px; } 50% { height: 100%; } }
+        
+        .ambient-playing { color: #10b981; animation: bounce 1s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+        .theater-visualizer-bar { animation: pulse-height 1s infinite ease-in-out; }
+        .theater-visualizer-bar:nth-child(2) { animation-delay: 0.2s; }
+        .theater-visualizer-bar:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse-height { 0%, 100% { height: 6px; } 50% { height: 16px; } }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+        .modal-card { background: white; border-radius: 1.5rem; padding: 2rem; max-width: 400px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); text-align: center; }
+        
+        /* Animasi Khusus untuk Mode Telepon */
+        .call-pulse { animation: callPulse 1.5s infinite; }
+        @keyframes callPulse { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); } 70% { box-shadow: 0 0 0 40px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 text-slate-800">
+    <div id="alertContainer"></div>
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center mt-4 relative">
+            <div class="absolute right-0 top-0 flex flex-wrap justify-end gap-2 z-20">
+                <button id="installAppBtn" class="hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm flex items-center gap-2 transition-all" title="Install Aplikasi">📥 Install</button>
+                <button onclick="openBackupModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl font-bold shadow-sm flex items-center gap-2 transition-all" title="Backup/Restore Data & Manajemen Memori">⚙️ Data</button>
+                <button onclick="openStatsDashboard()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-xl font-bold shadow-sm flex items-center gap-2 transition-all">📈 Statistik</button>
+            </div>
+            
+            <div class="flex justify-center items-center gap-3 mb-2 pt-16 md:pt-0 relative z-10">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Ultimate Polyglot AI</h1>
+                <div id="ambientIcon" class="hidden text-xl" title="Ambient Audio Aktif">🎧</div>
+            </div>
+            <p class="text-slate-500 font-medium italic relative z-10">"Berbicara layaknya warga lokal, tanpa kaku buku teks."</p>
+        </header>
+
+        <!-- AI Generator Section -->
+        <div class="bg-white rounded-3xl shadow-sm p-6 mb-6 border border-slate-200/60 hover:border-blue-200 transition-all relative z-10">
+            <div class="flex flex-col md:flex-row md:justify-between items-start md:items-center mb-4 gap-3">
+                <h2 class="text-sm font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" /></svg>
+                    Generator Skenario Sehari-hari
+                </h2>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="openRawConverter()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 text-[10px] px-3 py-1.5 rounded-full font-bold shadow-sm transition-colors border border-indigo-200">📝 Teks Kaku ➡️ Gaul</button>
+                    <button onclick="openVocabModal()" id="flashbackCount" class="hidden bg-orange-100 text-orange-700 hover:bg-orange-200 text-[10px] px-3 py-1.5 rounded-full font-bold flex items-center gap-1 border border-orange-200"><span>📚</span> <span id="flashbackCountText">0 Kata Flashback</span></button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-3">
+                <select id="targetLanguage" class="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-sm font-bold text-rose-700 outline-none focus:ring-2 focus:ring-rose-500" onchange="updateStorySelectUI()">
+                    <option value="en-US">🇬🇧 English</option>
+                    <option value="id-ID">🇮🇩 Indonesian</option>
+                    <option value="zh-CN">🇨🇳 Mandarin</option>
+                    <option value="ja-JP">🇯🇵 Japanese</option>
+                    <option value="ko-KR">🇰🇷 Korean</option>
+                    <option value="ar-SA">🇸🇦 Arabic</option>
+                    <option value="es-ES">🇪🇸 Spanish</option>
+                    <option value="fr-FR">🇫🇷 French</option>
+                    <option value="de-DE">🇩🇪 German</option>
+                    <option value="ru-RU">🇷🇺 Russian</option>
+                    <option value="hi-IN">🇮🇳 Hindi</option>
+                </select>
+
+                <select id="cefrLevel" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="A1">🌱 Level A1</option>
+                    <option value="A2">🌱 Level A2</option>
+                    <option value="B1" selected>🌿 Level B1</option>
+                    <option value="B2">🌿 Level B2</option>
+                    <option value="C1">🌳 Level C1</option>
+                    <option value="C2">🌳 Level C2</option>
+                </select>
+
+                <select id="contentMood" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500">
+                    <option value="neutral">😐 Mood: Netral</option>
+                    <option value="sad">😢 Mood: Sedih</option>
+                    <option value="excited">🤩 Mood: Semangat</option>
+                    <option value="romantic">🥰 Mood: Romantis</option>
+                    <option value="tense">😠 Mood: Tegang</option>
+                </select>
+                
+                <input type="text" id="aiPrompt" placeholder="Topik? (Misal: nembak cowok/cewek, telat kerja)" class="md:col-span-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4 items-center">
+                <span class="text-xs font-bold text-slate-400 mr-1">Ide Cepat:</span>
+                <button onclick="setPrompt('Ngantuk banget di kelas/kantor')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium px-3 py-1.5 rounded-lg transition-colors">😴 Ngantuk</button>
+                <button onclick="setPrompt('Nawar harga sepatu di pasar tradisional')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium px-3 py-1.5 rounded-lg transition-colors">🚕 Nawar Harga</button>
+                <button onclick="setPrompt('Diskusi dengan bos karena izin telat masuk kerja/sekolah')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium px-3 py-1.5 rounded-lg transition-colors">💼 Izin Telat</button>
+                <button onclick="setPrompt('Nongkrong bahas hal viral bareng temen')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium px-3 py-1.5 rounded-lg transition-colors">🎮 Bahas Viral</button>
+            </div>
+
+            <button onclick="generateAIStory()" id="genBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-md transform active:scale-95 transition-all flex items-center justify-center gap-2">Generate Konten Adaptive 🪄</button>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="bg-white rounded-2xl shadow-sm p-5 mb-6 flex flex-col lg:flex-row gap-5 items-center justify-between border border-slate-200/60 relative z-10">
+            <div class="flex items-center gap-3 w-full lg:w-auto">
+                <span class="text-sm font-semibold text-slate-500">Koleksi:</span>
+                <select id="storySelect" class="w-full md:w-auto bg-slate-100 border-none rounded-lg px-4 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"></select>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+                <div class="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-fuchsia-100 px-3 py-1.5 rounded-lg border border-purple-200 shadow-inner">
+                    <span id="cloudVoiceText" class="text-xs font-black text-purple-700 tracking-wide cursor-help" title="Matikan ini jika interaksi telepon terasa lambat. Jika dimatikan, aplikasi memanggil suara instan bawaan Laptop.">AI Cloud ✨</span>
+                    <label class="relative inline-flex items-center cursor-pointer scale-90">
+                        <input type="checkbox" id="toggleCloudVoice" class="sr-only peer" checked onchange="handleCloudToggle()">
+                        <div class="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-200">
+                    <span class="text-xs font-bold text-yellow-700">Audio-First (Blur)</span>
+                    <label class="relative inline-flex items-center cursor-pointer scale-90">
+                        <input type="checkbox" id="toggleAudioFirst" class="sr-only peer" onchange="renderStory()">
+                        <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:bg-yellow-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                    <span class="text-xs font-bold text-emerald-700">Gen-Z Slang</span>
+                    <label class="relative inline-flex items-center cursor-pointer scale-90">
+                        <input type="checkbox" id="toggleSlang" class="sr-only peer" onchange="renderStory()">
+                        <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                    </label>
+                </div>
+
+                <div class="flex items-center gap-1 bg-blue-50 px-2 py-1.5 rounded-lg border border-blue-100">
+                    <span class="text-lg">⏱️</span>
+                    <select id="audioSpeed" class="bg-transparent border-none text-xs font-bold text-blue-700 outline-none w-16">
+                        <option value="1">1.0x</option>
+                        <option value="0.75">0.75x</option>
+                        <option value="0.5">0.5x</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-1 bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-inner">
+                    <button onclick="changeFontSize(-1)" class="px-2 font-bold text-slate-500 hover:text-slate-800 transition-colors">A-</button>
+                    <span class="text-xs text-slate-400">|</span>
+                    <button onclick="changeFontSize(1)" class="px-2 font-bold text-slate-500 hover:text-slate-800 transition-colors">A+</button>
+                </div>
+
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" id="toggleTranslate" class="peer sr-only" checked onchange="renderStory()">
+                    <div class="block w-9 h-5 bg-slate-200 rounded-full peer-checked:bg-blue-500 relative after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                    <span id="subsLabel" class="text-xs font-bold text-slate-500">Subs 🇮🇩</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Main Reading Area -->
+        <div id="readingAreaContainer" class="bg-white rounded-3xl shadow-md p-6 md:p-10 border border-slate-100 mb-8 relative min-h-[300px] overflow-hidden transition-all duration-500">
+            <div id="loadingOverlay" class="hidden absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-30 flex flex-col items-center justify-center">
+                <div class="w-12 h-12 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                <p id="loadingText" class="text-blue-400 font-bold animate-pulse text-center px-6">Menyusun data dengan AI...</p>
+            </div>
+
+            <div class="flex justify-between items-start mb-6 relative z-10">
+                <div>
+                    <h2 id="contentTitle" class="text-2xl font-extrabold text-slate-800 mb-1 uppercase tracking-tight">Memuat...</h2>
+                    <div class="flex gap-2 items-center mt-1">
+                        <span id="langBadge" class="hidden bg-rose-100 text-rose-700 text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded">BAHASA</span>
+                        <span id="moodBadge" class="hidden bg-purple-100 text-purple-700 text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded">MOOD</span>
+                        <span id="cefrBadge" class="hidden bg-indigo-100 text-indigo-700 text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded">LEVEL</span>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openPlaylist()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-1">🕒 Riwayat</button>
+                    <button id="closeStoryBtn" onclick="closeScenario()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-red-500 px-3 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-1">✖ Tutup</button>
+                </div>
+            </div>
+
+            <div id="sceneBox" class="bg-amber-50 border border-amber-200 scene-box-bg rounded-2xl p-5 mb-8 hidden relative z-10">
+                <p id="sceneDescription" class="font-medium italic text-amber-900 leading-relaxed theater-text"></p>
+                <div id="theaterProgressBar" class="absolute top-0 left-0 h-1.5 bg-blue-500 w-0 transition-all duration-500 hidden z-20"></div>
+                
+                <div id="theaterControls" class="hidden mt-4 flex items-center justify-center gap-4 bg-slate-800/90 backdrop-blur border border-slate-700 px-4 py-2.5 rounded-2xl shadow-lg shrink-0 w-fit mx-auto">
+                    <div class="flex items-center gap-1 px-2 h-5">
+                        <div class="w-1.5 h-2 bg-blue-400 rounded-full theater-visualizer-bar"></div>
+                        <div class="w-1.5 h-4 bg-blue-500 rounded-full theater-visualizer-bar"></div>
+                        <div class="w-1.5 h-3 bg-blue-300 rounded-full theater-visualizer-bar"></div>
+                    </div>
+                    <div class="h-6 w-px bg-slate-600 mx-1"></div>
+                    <button onclick="pauseResumeTheater()" id="btnPauseTheater" class="w-10 h-10 flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                    <button onclick="toggleTheaterMode()" class="w-10 h-10 flex items-center justify-center bg-slate-700 hover:bg-red-500 text-slate-300 hover:text-white rounded-full transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg></button>
+                </div>
+            </div>
+
+            <div id="contentBody" class="leading-loose text-slate-700 space-y-6 relative z-10"></div>
+            
+            <div class="mt-12 pt-8 border-t border-slate-100 flex flex-wrap gap-3 justify-center relative z-10">
+                <button onclick="toggleTheaterMode()" id="btnTheater" class="flex-1 min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-4 rounded-2xl font-bold text-sm shadow-md transition-all transform active:scale-95">🍿 Teater</button>
+                <button onclick="toggleChallengeMode()" id="btnChallenge" class="flex-1 min-w-[150px] bg-slate-800 hover:bg-slate-900 text-white py-3.5 px-4 rounded-2xl font-bold text-sm shadow-md transition-all transform active:scale-95">🎯 Tantangan</button>
+                <button onclick="toggleRoleplay()" id="btnRoleplay" class="flex-1 min-w-[150px] bg-indigo-100 hover:bg-indigo-200 text-indigo-700 py-3.5 px-4 rounded-2xl font-bold text-sm transition-all transform active:scale-95">🎭 Simulasi Baca</button>
+                <button onclick="openDuelModal()" id="btnDuel" class="flex-1 min-w-[150px] bg-purple-100 hover:bg-purple-200 text-purple-700 py-3.5 px-4 rounded-2xl font-bold text-sm shadow-sm transition-all transform active:scale-95">⚔️ Duel Fonetik</button>
+                <button onclick="startLiveCall()" id="btnLiveCall" class="flex-none w-full md:w-auto bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white py-3.5 px-6 rounded-2xl font-extrabold text-sm shadow-lg shadow-rose-500/30 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 border-2 border-rose-400/50">📞 Ujian Telepon (Live AI)</button>
+            </div>
+        </div>
+
+        <!-- Word Card -->
+        <div id="wordCard" class="hidden bg-white border-2 border-indigo-100 rounded-3xl p-6 shadow-xl animate-in fade-in slide-in-from-bottom-4 mb-8 relative z-10">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 id="activeWord" class="text-2xl font-extrabold text-indigo-900 mb-1">Kata</h3>
+                    <p id="wordPhonetic" class="text-sm text-indigo-500 font-medium bg-indigo-50 inline-block px-2 py-0.5 rounded-md">/pronunciation/</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="analyzeWithAI()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-5 py-2.5 rounded-2xl text-xs font-black uppercase transition-all">Tanya AI ✨</button>
+                    <button onclick="speakWord(this)" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-2xl shadow-md transform active:scale-95">🔊</button>
+                </div>
+            </div>
+            <div id="aiAnalysisText" class="hidden text-sm text-slate-700 leading-relaxed bg-indigo-50/50 p-5 rounded-2xl border border-indigo-100 mt-4"></div>
+            <div id="wordDetails" class="grid md:grid-cols-2 gap-4 mt-4">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <p class="text-[10px] font-bold uppercase text-slate-500 mb-1 tracking-widest">Arti Harfiah</p>
+                    <p id="wordLiteral" class="text-slate-800 text-sm font-semibold">-</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                    <p class="text-[10px] font-bold uppercase text-blue-600 mb-1 tracking-widest">Konteks Adegan</p>
+                    <p id="wordContext" class="text-blue-900 text-sm font-semibold">-</p>
+                </div>
+                <div id="wordCultureBox" class="hidden bg-purple-50 p-4 rounded-2xl border border-purple-100 md:col-span-2">
+                    <p class="text-[10px] font-bold uppercase text-purple-600 mb-1 tracking-widest">🌏 Catatan Budaya</p>
+                    <p id="wordCulture" class="text-purple-900 text-sm font-medium italic">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Call Overlay -->
+    <div id="callOverlay" class="hidden fixed inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center p-6 bg-opacity-95 backdrop-blur-md">
+        <button onclick="endLiveCall()" class="absolute top-6 left-6 text-slate-400 hover:text-white font-bold text-sm bg-slate-800 px-4 py-2 rounded-full">← Keluar</button>
+        <div id="callAvatar" class="w-40 h-40 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 mb-8 flex items-center justify-center text-6xl shadow-[0_0_50px_rgba(99,102,241,0.3)] transition-all duration-300 relative border-4 border-slate-800">
+            🤖
+            <div id="callPulseRing" class="absolute inset-0 rounded-full border-2 border-indigo-400 opacity-0"></div>
+        </div>
+        <h2 id="callName" class="text-4xl font-black text-white mb-2 tracking-tight">AI Caller</h2>
+        <p id="callStatus" class="text-indigo-300 mb-12 font-medium bg-indigo-900/50 px-4 py-1.5 rounded-full animate-pulse">Menghubungkan...</p>
+        
+        <div class="flex gap-6 mb-8">
+            <button id="callMicBtn" onclick="toggleCallMic()" class="w-20 h-20 rounded-full bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-3xl transition-all shadow-lg border-4 border-slate-600" title="Sentuh untuk bicara">🎤</button>
+            <button onclick="endLiveCall()" class="w-20 h-20 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center text-3xl transition-all shadow-[0_0_30px_rgba(220,38,38,0.4)] border-4 border-red-500" title="Tutup Telepon">📞</button>
+        </div>
+        
+        <div id="callTranscript" class="w-full max-w-2xl h-48 overflow-y-auto text-left p-6 bg-slate-900/80 rounded-3xl border border-slate-700/50 shadow-inner space-y-3 font-medium text-sm scroll-smooth">
+            <!-- Isi chat berjalan disini -->
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="onboardingModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 text-center transform transition-all duration-300">
+            <div class="text-6xl mb-4">🌍</div><h2 class="text-2xl font-black text-slate-800 mb-2">Selamat Datang di Ultimate Polyglot!</h2>
+            <div class="text-left bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mt-4 mb-2">
+                <h4 class="font-bold text-indigo-800 text-sm mb-2">Metode Unggulan Kami:</h4>
+                <ul class="text-xs text-indigo-700 space-y-2 list-disc list-inside">
+                    <li><b>Phonetic Precision (Minimal Pairs Training):</b> Melatih otot mulut untuk membedakan bunyi-bunyi vokal/konsonan yang sangat mirip namun mengubah makna secara fatal (misal: panjang-pendek vokal pada <i>sheet</i> vs <i>sh!t</i>).</li>
+                    <li><b>Pronunciation Scaffolding:</b> Evaluasi warna presisi per kata, bukan sekadar nilai akhir.</li>
+                </ul>
+            </div>
+            <div class="text-left bg-slate-50 p-4 rounded-2xl border border-slate-100 my-4">
+                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Level Bahasa Anda:</label>
+                <select id="onboardingLevel" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-blue-700 outline-none">
+                    <option value="A1">Pemula (A1)</option>
+                    <option value="A2">Dasar (A2)</option>
+                    <option value="B1" selected>Menengah (B1)</option>
+                    <option value="B2">Menengah Atas (B2)</option>
+                    <option value="C1">Mahir (C1)</option>
+                    <option value="C2">Sangat Mahir (C2)</option>
+                </select>
+            </div>
+            <button onclick="finishOnboarding()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-md transform active:scale-95 transition-all">Mulai Belajar 🚀</button>
+        </div>
+    </div>
+
+    <div id="backupModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6"><div class="flex justify-between items-center mb-6"><h3 class="font-bold text-slate-800 text-lg">⚙️ Data</h3><button onclick="closeBackupModal()" class="text-slate-400 hover:text-red-500 font-bold">✖</button></div><div class="space-y-4"><button onclick="exportData()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-sm transition-all">📤 Export Data</button><button onclick="triggerImport()" class="w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold border border-emerald-200 transition-all">📥 Import Data</button><input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)"><div class="border-t pt-4"><p class="text-xs text-slate-500 mb-2 font-bold uppercase">Memori Offline (Audio)</p><div class="flex justify-between items-center bg-slate-100 p-3 rounded-xl"><span id="cacheSizeText" class="text-sm font-bold text-blue-600">Menghitung...</span><button onclick="clearMediaCache()" class="text-xs bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold shadow-sm">🗑️ Bersihkan</button></div></div></div></div></div>
+
+    <div id="playlistModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-indigo-50/80">
+                <h3 class="font-bold text-indigo-800 text-lg">🕒 Riwayat Dialog</h3>
+                <button onclick="closePlaylist()" class="text-slate-400 hover:text-red-500 text-xl font-bold">✖</button>
+            </div>
+            <div id="playlistContainer" class="p-6 overflow-y-auto flex-1 bg-slate-50/50"></div>
+        </div>
+    </div>
+    
+    <div id="vocabModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]"><div class="p-6 border-b border-slate-100 flex justify-between items-center bg-orange-50/80"><h3 class="font-bold text-orange-800 text-lg">📚 Kamus Kelemahan</h3><button onclick="closeVocabModal()" class="text-slate-400 hover:text-red-500 text-xl font-bold">✖</button></div><div class="flex flex-col md:flex-row flex-1 overflow-hidden"><div class="w-full md:w-1/3 bg-slate-50 border-r border-slate-100 p-4 overflow-y-auto" id="vocabListContainer"></div><div class="w-full md:w-2/3 p-6 overflow-y-auto bg-white flex flex-col items-center justify-center text-center" id="vocabDetailContainer"></div></div></div></div>
+
+    <div id="converterModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col transform scale-95 transition-all duration-300" id="converterModalContent"><div class="p-6 border-b border-slate-100 bg-indigo-50/80 flex justify-between items-center"><h3 class="font-bold text-indigo-800 text-lg">📝 Ubah Teks Kaku Jadi Gaul</h3><button onclick="closeRawConverter()" class="text-slate-400 hover:text-red-500 font-bold">✖</button></div><div class="p-6"><p class="text-xs text-slate-500 mb-3">Paste kalimat formal di bawah. AI akan merombaknya jadi bahasa tongkrongan lokal.</p><textarea id="rawTextInput" rows="4" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-indigo-500 mb-4" placeholder="Misal: 'I would like to purchase a cup of coffee.'"></textarea><button onclick="convertRawText()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-md transition-all">Ubah Sekarang 🪄</button></div></div></div>
+    
+    <div id="roleplayModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col transform scale-95 transition-all duration-300" id="roleplayModalContent"><div class="p-8 text-center border-b border-slate-100"><h3 class="font-bold text-slate-800 text-xl">Siap Beradu Akting?</h3><p class="text-sm text-slate-500 mt-2">Pilih karakter yang ingin kamu perankan.</p></div><div id="roleplayCharacters" class="p-4 space-y-2 bg-slate-50"></div><div class="p-6 bg-white flex flex-col gap-2"><button onclick="closeRoleplayModal()" class="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors">Nggak jadi deh</button></div></div></div>
+
+    <div id="duelModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col transform transition-all duration-300">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                <h3 class="font-bold text-lg">⚔️ Minimal Pair Showdown</h3>
+                <button onclick="closeDuelModal()" class="text-white hover:text-rose-200 font-bold">✖</button>
+            </div>
+            <div class="p-6 flex flex-col items-center bg-slate-50">
+                <p class="text-sm text-slate-600 mb-6 text-center font-medium">Ucapkan kedua kata jebakan ini secara berturut-turut untuk melatih presisi otot mulut Anda!</p>
+                <div class="flex w-full justify-between items-center gap-4 mb-8">
+                    <div class="flex-1 bg-white border-2 border-rose-200 rounded-3xl p-6 text-center shadow-sm">
+                        <h4 id="duelWord1" class="text-3xl font-black text-rose-700 mb-2">...</h4>
+                        <p id="duelPhonetic1" class="text-rose-500 font-mono text-sm bg-rose-50 inline-block px-2 py-1 rounded">/../</p>
+                        <p id="duelMeaning1" class="text-[10px] text-rose-400 font-bold uppercase mt-3">...</p>
+                    </div>
+                    <div class="text-2xl font-black text-slate-300">VS</div>
+                    <div class="flex-1 bg-white border-2 border-blue-200 rounded-3xl p-6 text-center shadow-sm">
+                        <h4 id="duelWord2" class="text-3xl font-black text-blue-700 mb-2">...</h4>
+                        <p id="duelPhonetic2" class="text-blue-500 font-mono text-sm bg-blue-50 inline-block px-2 py-1 rounded">/../</p>
+                        <p id="duelMeaning2" class="text-[10px] text-blue-400 font-bold uppercase mt-3">...</p>
+                    </div>
+                </div>
+                <button id="duelMicBtn" onclick="startDuelMic()" class="w-20 h-20 rounded-full bg-slate-800 text-white text-3xl flex items-center justify-center hover:bg-rose-500 hover:scale-110 transition-all shadow-xl mb-4 border-4 border-slate-700">🎤</button>
+                <p id="duelStatus" class="text-sm font-bold text-slate-600 h-6">Sentuh mic dan ucapkan keduanya!</p>
+                <button onclick="generateNewDuel()" class="mt-6 text-xs text-indigo-600 bg-indigo-100 hover:bg-indigo-200 px-4 py-2 rounded-xl font-bold transition-colors flex items-center gap-2">
+                    <span class="text-base">🔄</span> Ganti Pasangan Kata AI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="statsModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-800 text-lg">📈 Statistik Belajar</h3>
+                <button onclick="closeStatsDashboard()" class="text-slate-400 hover:text-red-500 font-bold">✖</button>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                    <p class="text-[10px] font-bold uppercase text-blue-500 mb-1">Akurasi</p>
+                    <p id="statAccuracy" class="text-2xl font-black text-blue-700">0%</p>
+                </div>
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                    <p class="text-[10px] font-bold uppercase text-emerald-500 mb-1">Kata Benar</p>
+                    <p id="statWords" class="text-2xl font-black text-emerald-700">0</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 col-span-2">
+                    <p class="text-[10px] font-bold uppercase text-slate-500 mb-1">Total Percobaan</p>
+                    <p id="statAttempts" class="text-2xl font-black text-slate-700">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.currentFallbackAudio = null;
+        window.currentActiveUtterance = null;
+        let localVoiceMap = {}; 
+        const apiKey = ""; 
+
+        // STATE GLOBAL STANDAR
+        let characterVoiceMap = {};
+        let savedStories = {}; 
+        let activeStoryId = 'free_talk'; 
+        let currentWord = ""; 
+        let currentSentence = ""; 
+        let isChallengeMode = false;
+        let isRoleplayActive = false;
+        let isTheaterMode = false;
+        let theaterIndex = 0;
+        let roleplayCharacter = null;
+        let currentRoleplayIndex = 0;
+        let isTheaterPaused = false;
+        let fontSizeLevel = 1;
+        const textSizes = ['text-base', 'text-lg', 'text-xl', 'text-2xl'];
+        const phoneticSizes = ['text-[10px]', 'text-xs', 'text-sm', 'text-base'];
+
+        // STATE GLOBAL DUEL FONETIK
+        let currentDuelTargetLang = "en-US";
+        let duelRec = null;
+        let isDuelMicListening = false;
+
+        // STATE GLOBAL KHUSUS LIVE CALL
+        let liveCallHistory = [];
+        let isLiveCallActive = false;
+        let callSpeechRec = null;
+        let autoGreetTimer = null; 
+        let callerIdentity = { name: "AI", voice: "Aoede", isFemale: true, lang: "en-US", langName: "English" };
+        let liveCallAbortController = null; 
+        let isMicListening = false; // PERBAIKAN: Penanda status agar mic tidak gampang error 'network'
+
+        const defaultStories = {
+            cartoon: { languageCode: "en-US", languageName: "English", mood: "neutral", level: "A1", title: "Fast Only Half a Day", scene: "Di dalam kelas Tadika Mesra, Upin dan Ipin sedang mengobrol dengan Fizi yang terlihat lemas saat bulan puasa. 🏫👦🏽", sentences: [ { speaker: "Upin", gender: "male", assignedVoice: "Fenrir", assignedGender: "male", cleanSpeakerKey: "UPIN", text: "Hey Fizi, didn't you fast only half a day?", phonetic: "heɪ fizi, ˈdɪdnt juː fɑːst ˈəʊnli hɑːf ə deɪ?", id: "Hei Fizi, bukankah kamu puasa cuma setengah hari?", id_slang: "Woi Fizi, lu bukannya puasa setengah hari doang ya?", analysis: { "fast": { literal: "Cepat / Puasa", context: "Sebagai kata kerja (verb) dalam konteks agama, fast berarti menahan makan dan minum.", cultural_note: "Dalam budaya Barat, puasa (fasting) lebih sering dikaitkan dengan diet medis daripada spiritual.", phonetic: "fɑːst" } } }, { speaker: "Fizi", gender: "male", assignedVoice: "Charon", assignedGender: "male", cleanSpeakerKey: "FIZI", text: "I'm still starving, you know. My stomach has been rumbling since morning.", phonetic: "aɪm stɪl ˈstɑːvɪŋ, juː nəʊ. maɪ ˈstʌmək hæz biːn ˈrʌmblɪŋ sɪns ˈmɔːnɪŋ.", id: "Aku masih kelaparan tau. Perutku sudah keroncongan dari pagi.", id_slang: "Gue masih laper parah tau. Perut gue udah bunyi mulu dari pagi.", analysis: { "starving": { literal: "Mati kelaparan", context: "Bahasa sehari-hari untuk menyatakan sangat lapar.", cultural_note: "Hyperbole yang sangat umum.", phonetic: "ˈstʌrvɪŋ" } } } ] }
+        };
+
+        // ==========================================
+        // SYSTEM CORE
+        // ==========================================
+        function getCurrentStory() {
+            return savedStories[activeStoryId.replace('saved_', '')] || defaultStories[activeStoryId];
+        }
+
+        function showCustomAlert(msg) {
+            const container = document.getElementById('alertContainer');
+            if (!container) return;
+            const overlay = document.createElement('div');
+            overlay.className = "modal-overlay";
+            overlay.innerHTML = `<div class="modal-card"><p class="font-bold text-slate-800 mb-4">${msg}</p><button onclick="this.parentElement.parentElement.remove()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold shadow-md transition-all">OK</button></div>`;
+            container.appendChild(overlay);
+        }
+
+        function checkFirstVisit() {
+            if (!localStorage.getItem('polyglot_onboarding_done')) {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+            }
+        }
+
+        const MediaDB = {
+            db: null,
+            init() { return new Promise((resolve) => { let req = indexedDB.open('PolyglotMediaDB', 4); req.onupgradeneeded = (e) => { let db = e.target.result; if(!db.objectStoreNames.contains('audioCache')) db.createObjectStore('audioCache'); }; req.onsuccess = (e) => { this.db = e.target.result; resolve(); }; }); },
+            async save(store, key, val) { await this.init(); let tx = this.db.transaction(store, 'readwrite'); tx.objectStore(store).put(val, key); },
+            async get(store, key) { await this.init(); return new Promise((res) => { let tx = this.db.transaction(store, 'readonly'); let req = tx.objectStore(store).get(key); req.onsuccess = () => res(req.result); }); },
+            async calculateSize() { await this.init(); let bytes = 0; let tx = this.db.transaction('audioCache', 'readonly'); let req = tx.objectStore('audioCache').openCursor(); return new Promise((res) => { req.onsuccess = (e) => { let c = e.target.result; if(c) { bytes += (c.value.size || 0); c.continue(); } else res(bytes); }; }); },
+            async clearAll() { await this.init(); this.db.transaction('audioCache', 'readwrite').objectStore('audioCache').clear(); }
+        };
+
+        // PERBAIKAN: Menambahkan parameter "temp" (Temperature) untuk mengatur tingkat kreativitas (keliaran) AI
+        async function fetchGemini(prompt, systemInstruction = "", isJson = false, temp = 1.0) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemInstruction }] } };
+            
+            payload.generationConfig = { temperature: temp };
+            if (isJson) payload.generationConfig.responseMimeType = "application/json";
+            
+            for (let i = 0; i < 3; i++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const result = await response.json();
+                    if(result.error) throw new Error(result.error.message);
+                    let rawText = result.candidates[0].content.parts[0].text;
+                    if (isJson) {
+                        const start = rawText.indexOf('{');
+                        const end = rawText.lastIndexOf('}');
+                        if (start !== -1 && end !== -1) rawText = rawText.substring(start, end + 1);
+                    }
+                    return rawText;
+                } catch (error) { await new Promise(r => setTimeout(r, 1000)); }
+            }
+            throw new Error("Gagal menghubungi AI.");
+        }
+
+        // ==========================================
+        // PWA SETUP
+        // ==========================================
+        function setupPWA() {
+            try {
+                const manifest = { name: "Polyglot AI", short_name: "Polyglot", start_url: ".", display: "standalone", background_color: "#f8fafc", theme_color: "#2563eb", icons: [{ src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI1NjNlYiIvPjx0ZXh0IHg9IjUwIiB5PSI2MCIgZm9udC1zaXplPSI0MCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QTwvdGV4dD48L3N2Zz4=", sizes: "192x192", type: "image/svg+xml" }] };
+                const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+                document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blob)}">`);
+                
+                if ('serviceWorker' in navigator && !window.location.protocol.startsWith('blob')) { 
+                    navigator.serviceWorker.register(URL.createObjectURL(new Blob(["self.addEventListener('fetch', (e) => {});"], {type: 'application/javascript'}))).catch(() => {});
+                }
+            } catch (e) {}
+
+            let def; 
+            window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); def = e; document.getElementById('installAppBtn')?.classList.remove('hidden'); });
+            const instBtn = document.getElementById('installAppBtn');
+            if(instBtn) {
+                instBtn.onclick = async () => { if(def){ def.prompt(); const {outcome} = await def.userChoice; if(outcome === 'accepted') instBtn.classList.add('hidden'); def = null; } };
+            }
+        }
+
+        // ==========================================
+        // DATA MANAGEMENT, STATS & TRACKERS
+        // ==========================================
+        const UserStats = {
+            correct: 0, total: 0, attempts: 0,
+            load() { try { const data = JSON.parse(localStorage.getItem('polyglot_stats')); if(data){ this.correct=data.correct; this.total=data.total; this.attempts=data.attempts; } } catch(e){} },
+            save() { localStorage.setItem('polyglot_stats', JSON.stringify(this)); },
+            addResult(correctWords, targetLength) { this.correct += correctWords; this.total += targetLength; this.attempts += 1; this.save(); },
+            getAccuracy() { return this.total === 0 ? 0 : Math.round((this.correct / this.total) * 100); }
+        };
+
+        const FlashbackTracker = {
+            storageKey: 'polyglot_failed_words',
+            saveFailedWord(word) { if(!word || word.length < 2) return; let words = this.getFailedWords(); if (!words.includes(word)) { words.push(word); localStorage.setItem(this.storageKey, JSON.stringify(words)); } this.updateBadge(); },
+            removeWord(word) { let words = this.getFailedWords().filter(w => w.toLowerCase() !== word.toLowerCase()); localStorage.setItem(this.storageKey, JSON.stringify(words)); this.updateBadge(); },
+            getFailedWords() { try { return JSON.parse(localStorage.getItem(this.storageKey)) || []; } catch(e) { return []; } },
+            getWordsForPrompt(limit = 3) { return this.getFailedWords().sort(() => 0.5 - Math.random()).slice(0, limit); },
+            updateBadge() { const count = this.getFailedWords().length; const el = document.getElementById('flashbackCountText'); const btn = document.getElementById('flashbackCount'); if(el && btn) { el.innerText = `${count} Kata Sulit`; btn.classList.toggle('hidden', count === 0); } }
+        };
+
+        const AmbientEngine = {
+            ctx: null, osc: null, gain: null, isPlaying: false,
+            init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+            play(mood) { this.init(); this.stop(); this.isPlaying = true; document.getElementById('ambientIcon')?.classList.remove('hidden'); if (mood === 'sad') this.playRain(); else if (mood === 'tense') this.playDrone(110, 0.05); else if (mood === 'romantic') this.playDrone(220, 0.03, 'triangle'); else if (mood === 'excited') this.playDrone(440, 0.02, 'sine'); },
+            stop() { if (this.osc) { try { this.osc.stop(); } catch(e){} } this.isPlaying = false; document.getElementById('ambientIcon')?.classList.add('hidden'); },
+            playDrone(freq, vol, type = 'sine') { this.osc = this.ctx.createOscillator(); this.gain = this.ctx.createGain(); this.osc.type = type; this.osc.frequency.setValueAtTime(freq, this.ctx.currentTime); this.gain.gain.setValueAtTime(vol, this.ctx.currentTime); this.osc.connect(this.gain); this.gain.connect(this.ctx.destination); this.osc.start(); },
+            playRain() { const bufferSize = 2 * this.ctx.sampleRate, noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate), output = noiseBuffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1; const noise = this.ctx.createBufferSource(); noise.buffer = noiseBuffer; noise.loop = true; const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 1000; const rainGain = this.ctx.createGain(); rainGain.gain.value = 0.05; noise.connect(filter); filter.connect(rainGain); rainGain.connect(this.ctx.destination); noise.start(); this.osc = noise; }
+        };
+
+        function getLocalizedLevel(langCode, cefrLevel) {
+            const mapping = {
+                'ja-JP': { 'A1': 'JLPT N5', 'A2': 'JLPT N4', 'B1': 'JLPT N3', 'B2': 'JLPT N2', 'C1': 'JLPT N1', 'C2': 'JLPT N1+' },
+                'zh-CN': { 'A1': 'HSK 1', 'A2': 'HSK 2', 'B1': 'HSK 3', 'B2': 'HSK 4', 'C1': 'HSK 5', 'C2': 'HSK 6' },
+                'ko-KR': { 'A1': 'TOPIK 1', 'A2': 'TOPIK 2', 'B1': 'TOPIK 3', 'B2': 'TOPIK 4', 'C1': 'TOPIK 5', 'C2': 'TOPIK 6' },
+                'ru-RU': { 'A1': 'TRKI A1', 'A2': 'TRKI A2', 'B1': 'TRKI B1', 'B2': 'TRKI B2', 'C1': 'TRKI C1', 'C2': 'TRKI C2' },
+                'id-ID': { 'A1': 'BIPA 1', 'A2': 'BIPA 2', 'B1': 'BIPA 3', 'B2': 'BIPA 4', 'C1': 'BIPA 5', 'C2': 'BIPA 6' }
+            };
+            const cleanLevel = (cefrLevel || "").replace('Level ', '').trim();
+            if (mapping[langCode] && mapping[langCode][cleanLevel]) return mapping[langCode][cleanLevel];
+            return `CEFR ${cleanLevel}`; 
+        }
+
+        // ==========================================
+        // TTS ENGINE DENGAN INJEKSI EMOSI & BAHASA
+        // ==========================================
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1; const bitsPerSample = 16; const buffer = new ArrayBuffer(44 + pcmData.byteLength); const view = new DataView(buffer);
+            const writeString = (v, offset, str) => { for (let i = 0; i < str.length; i++) v.setUint8(offset + i, str.charCodeAt(i)); };
+            writeString(view, 0, 'RIFF'); view.setUint32(4, 36 + pcmData.byteLength, true); writeString(view, 8, 'WAVE'); writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, numChannels, true); view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * (bitsPerSample / 8), true); view.setUint16(32, numChannels * (bitsPerSample / 8), true);
+            view.setUint16(34, bitsPerSample, true); writeString(view, 36, 'data'); view.setUint32(40, pcmData.byteLength, true);
+            new Uint8Array(buffer, 44).set(new Uint8Array(pcmData));
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        async function getAudioBlobUrl(text, langName, mood, voiceName, emotionCue = null, isFemale = false) {
+            let ttsText = text.replace(/([a-zA-Z])-([a-zA-Z])/g, '$1 $2')
+                              .replace(/\b(ssh+|shh+|ssst+|hmm+|ugh+|ah+|oh+)\b/gi, '')
+                              .replace(/^[,\.\s]+/, '')
+                              .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '') 
+                              .trim();
+
+            // PERBAIKAN STABILITAS SUARA: Mencegah perubahan "Persona/Orang" karena instruksi emosi yang berubah-ubah
+            let emotionStr = emotionCue ? emotionCue.toLowerCase() : mood.toLowerCase();
+            let toneCommand = "";
+            
+            // Jika mood netral, kita tahan instruksi emosi berlebihannya agar suara cewek tidak melompat-lompat
+            if (mood === 'neutral' && ['neutral', 'calm', 'normal', 'casual'].includes(emotionStr)) {
+                toneCommand = `Say in native ${langName}: `;
+            } else {
+                toneCommand = `Say in native ${langName} sounding ${emotionStr}: `;
+            }
+            
+            let finalTTSPrompt = `${toneCommand}${ttsText}`;
+
+            const cacheKey = `${langName}_${mood}_${voiceName}_${emotionCue}_${text}`;
+            try { const cached = await MediaDB.get('audioCache', cacheKey); if (cached) return URL.createObjectURL(cached); } catch(e) {}
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: finalTTSPrompt }] }], generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName } } } }, model: "gemini-2.5-flash-preview-tts" };
+
+            for(let i=0; i<3; i++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+                    if (response.status === 429) throw new Error("Rate limit API");
+                    const result = await response.json(); if(result.error) throw new Error(result.error.message);
+                    const inlineData = result.candidates[0].content.parts[0].inlineData;
+                    let rate = 24000; const match = inlineData.mimeType.match(/rate=(\d+)/); if(match) rate = parseInt(match[1]);
+                    const binary = atob(inlineData.data); const bytes = new Uint8Array(binary.length);
+                    for (let x = 0; x < binary.length; x++) bytes[x] = binary.charCodeAt(x);
+                    const wavBlob = pcmToWav(bytes.buffer, rate); await MediaDB.save('audioCache', cacheKey, wavBlob);
+                    return URL.createObjectURL(wavBlob);
+                } catch (e) { await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i))); }
+            }
+            return null; 
+        }
+
+        function smartSpeak(text, langCode, langName, voiceName, mood, onEnd, interrupt = true, pUrl = null, eCue = null, isFemale = false, speakerName = "Bot") {
+            return new Promise(async (resolve) => {
+                const finish = () => { if(onEnd) onEnd(); resolve(); };
+                if (interrupt) { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); if (window.currentFallbackAudio) { window.currentFallbackAudio.pause(); window.currentFallbackAudio = null; } }
+
+                let ttsText = text.replace(/([a-zA-Z])-([a-zA-Z])/g, '$1 $2').replace(/\b(ssh+|shh+|ssst+|hmm+|ugh+|ah+|oh+)\b/gi, '').replace(/^[,\.\s]+/, '').trim();
+                const isCloudChecked = document.getElementById('toggleCloudVoice')?.checked || false;
+
+                if (isCloudChecked) {
+                    let url = pUrl || await getAudioBlobUrl(text, langName, mood, voiceName, eCue, isFemale);
+                    if (url) {
+                        const a = new Audio(url); a.playbackRate = parseFloat(document.getElementById('audioSpeed')?.value || '1'); window.currentFallbackAudio = a;
+                        a.onended = finish; a.onerror = finish; a.play().catch(finish); return;
+                    }
+                }
+
+                if ('speechSynthesis' in window) {
+                    let availableVoices = window.speechSynthesis.getVoices();
+                    const baseLang = langCode.split('-')[0];
+                    let validVoices = availableVoices.filter(x => x.lang.replace('_', '-') === langCode || x.lang.startsWith(baseLang));
+                    if (validVoices.length === 0) validVoices = availableVoices; 
+                    
+                    let pool = validVoices;
+                    let genderedPool = validVoices.filter(v => {
+                        let n = v.name.toLowerCase();
+                        if (isFemale) return n.includes('female') || n.includes('girl') || n.includes('woman') || n.includes('susan') || n.includes('zira') || n.includes('gadis') || n.includes('siti') || n.includes('ayu');
+                        else return n.includes('male') || n.includes('boy') || n.includes('man') || n.includes('david') || n.includes('mark') || n.includes('andika') || n.includes('ardi') || n.includes('budi');
+                    });
+                    if (genderedPool.length > 0) pool = genderedPool; pool.sort((a,b) => a.name.localeCompare(b.name));
+
+                    let voice = null;
+                    if (localVoiceMap[speakerName]) voice = availableVoices.find(v => v.name === localVoiceMap[speakerName]);
+                    if (!voice && pool.length > 0) {
+                        let hash = 0; for (let i = 0; i < speakerName.length; i++) hash += speakerName.charCodeAt(i);
+                        voice = pool[Math.abs(hash) % pool.length]; if (voice) localVoiceMap[speakerName] = voice.name; 
+                    }
+
+                    const execSpeak = () => {
+                        const ut = new SpeechSynthesisUtterance(ttsText);
+                        ut.lang = voice ? voice.lang : langCode; if (voice) ut.voice = voice; ut.rate = parseFloat(document.getElementById('audioSpeed')?.value || '1');
+                        
+                        // Local Neural Voice Preservation: Kunci pitch di 1.0 absolut agar emosi suara Natural/Neural bawaan OS tidak rusak
+                        ut.pitch = 1.0; 
+                        
+                        window.currentActiveUtterance = ut; ut.onend = () => { window.currentActiveUtterance = null; finish(); }; ut.onerror = (e) => { window.currentActiveUtterance = null; if(e.error === 'canceled' || e.error === 'interrupted') { resolve(); return; } finish(); };
+                        window.speechSynthesis.speak(ut);
+                    };
+
+                    if (interrupt) setTimeout(execSpeak, 50); else execSpeak();
+                } else finish();
+            });
+        }
+
+        async function speakSentence(idx, intr = true, btn = null) {
+            let story = getCurrentStory();
+            if (!story) return; const s = story.sentences[idx];
+            let orig = btn ? btn.innerHTML : ""; if (btn) btn.innerHTML = `<div class="w-3.5 h-3.5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>`;
+            await smartSpeak(s.text, story.languageCode, story.languageName, s.assignedVoice, story.mood, () => { if (btn) btn.innerHTML = orig; }, intr, s.cloudAudioUrl, s.emotion_cue, s.assignedGender === 'female', s.cleanSpeakerKey || 'BOT');
+        }
+
+        async function speakWord(btn) {
+            let story = getCurrentStory();
+            let orig = btn ? btn.innerHTML : ""; if (btn) btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>`;
+            await smartSpeak(currentWord === "Kalimat Lengkap" ? currentSentence : currentWord, story?.languageCode || 'en-US', story?.languageName || 'English', story?.sentences[0]?.assignedVoice || 'Aoede', 'neutral', () => { if (btn) btn.innerHTML = orig; }, true, null, 'casual', story?.sentences[0]?.assignedGender === 'female', story?.sentences[0]?.cleanSpeakerKey || 'BOT');
+        }
+
+        function checkPronunciation(idx, btn, resId) {
+            // PERBAIKAN: Jika mic sudah nyala, batalkan rekaman (Toggle Off)
+            if (btn.recInstance) {
+                try { btn.recInstance.stop(); } catch(e){}
+                delete btn.recInstance;
+                btn.classList.remove('mic-listening');
+                document.getElementById(resId).innerHTML = `<div class="flex justify-between border-b pb-1 mb-2"><span class="text-[10px] font-bold uppercase text-slate-500">Info:</span><button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-red-500 font-bold hover:scale-110 transition-transform">✖</button></div><p class="text-slate-500 text-xs font-bold">Perekaman dibatalkan.</p>`;
+                return;
+            }
+
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRec) { showCustomAlert("Browser tidak mendukung Mikrofon."); return; }
+            let story = getCurrentStory();
+            if (!story || !story.sentences[idx]) return;
+            const target = story.sentences[idx].text; const rec = new SpeechRec(); rec.lang = story.languageCode || 'en-US';
+            
+            btn.recInstance = rec;
+
+            rec.onstart = () => { 
+                btn.classList.add('mic-listening'); 
+                const div = document.getElementById(resId); div.classList.remove('hidden'); 
+                div.innerHTML = `<div class="flex justify-between border-b pb-1 mb-2"><span class="text-[10px] font-bold uppercase text-slate-500">Status:</span><button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-red-500 font-bold hover:scale-110 transition-transform">✖</button></div><p class="text-red-500 animate-pulse font-bold">Sedang mendengarkan... (Ketuk mic lagi untuk batal)</p>`; 
+            };
+            rec.onresult = (e) => {
+                delete btn.recInstance;
+                const speech = e.results[0][0].transcript; 
+                const cleanTarget = target.toLowerCase().replace(/[-]/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, ''); const cleanSpeech = speech.toLowerCase().replace(/[-]/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, '');
+                const isAsian = ['zh-CN', 'ja-JP', 'ko-KR'].includes(story.languageCode);
+                const targetWords = isAsian ? cleanTarget.replace(/\s/g, '').split('') : cleanTarget.split(/\s+/).filter(Boolean); const spokenWords = isAsian ? cleanSpeech.replace(/\s/g, '').split('') : cleanSpeech.split(/\s+/).filter(Boolean);
+                let correct = 0; let html = ""; let i = 0; let j = 0;
+                while (i < targetWords.length || j < spokenWords.length) {
+                    if (targetWords[i] === spokenWords[j]) { html += `<span class="text-green-600 font-bold">${targetWords[i]}</span>${isAsian?'':' '}`; correct++; i++; j++; }
+                    else if (targetWords[i] && spokenWords.slice(j, j+3).includes(targetWords[i])) { html += `<span class="text-red-500 underline decoration-wavy">${spokenWords[j]}</span>${isAsian?'':' '}`; j++; }
+                    else { if (targetWords[i]) { html += `<span class="text-gray-400 line-through">${targetWords[i]}</span>${isAsian?'':' '}`; if(!isAsian) FlashbackTracker.saveFailedWord(targetWords[i]); i++; } if (spokenWords[j]) j++; }
+                }
+                UserStats.addResult(correct, targetWords.length);
+                
+                // PERBAIKAN: Legenda/Keterangan Penilaian Warna Visual
+                document.getElementById(resId).innerHTML = `
+                    <div class="flex justify-between border-b pb-1 mb-2">
+                        <span class="text-[10px] font-bold uppercase text-slate-500">Hasil Analisis Suara:</span>
+                        <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-red-500 font-bold hover:scale-110 transition-transform">✖</button>
+                    </div>
+                    <div class="leading-relaxed text-lg mb-3">${html}</div>
+                    <div class="bg-slate-50 p-2 rounded-lg text-[10px] text-slate-500 flex flex-col gap-1 border border-slate-100">
+                        <span class="font-bold text-slate-700 mb-1">Keterangan:</span>
+                        <div class="flex gap-3 flex-wrap">
+                            <span class="flex items-center gap-1"><b class="text-green-600">Hijau:</b> Pelafalan Tepat</span>
+                            <span class="flex items-center gap-1"><b class="text-gray-400 line-through">Coret:</b> Terlewat/Kurang Tepat</span>
+                            <span class="flex items-center gap-1"><b class="text-red-500 underline decoration-wavy">Garis Bawah:</b> Ekstra/Salah Ucap</span>
+                        </div>
+                    </div>`;
+            };
+            rec.onerror = (e) => { 
+                delete btn.recInstance; 
+                btn.classList.remove('mic-listening'); 
+                document.getElementById(resId).innerHTML = `<div class="flex justify-between border-b pb-1 mb-2"><span class="text-[10px] font-bold uppercase text-red-500">Gagal Mendengar</span><button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-red-500 font-bold hover:scale-110 transition-transform">✖</button></div><p class="text-sm">Tidak ada suara terdeteksi (${e.error}).</p>`; 
+            }; 
+            rec.onspeechend = () => { delete btn.recInstance; btn.classList.remove('mic-listening'); }; 
+            try { rec.start(); } catch(e) { delete btn.recInstance; }
+        }
+
+        async function preloadCloudAudio() {
+            let story = getCurrentStory();
+            if (!story || !story.sentences) return;
+            
+            const cloudSpan = document.getElementById('cloudVoiceText'); 
+            // Pemuatan Gaib (Zero-Latency Pre-fetching)
+            if (cloudSpan) {
+                cloudSpan.innerHTML = `Cloud <div class="inline-block w-3 h-3 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>`;
+            }
+            
+            for (let s of story.sentences) { 
+                if(!s.cloudAudioUrl) { 
+                    s.cloudAudioUrl = await getAudioBlobUrl(s.text, story.languageName, story.mood, s.assignedVoice, s.emotion_cue, s.assignedGender === 'female'); 
+                    // Jeda dinamis agar tidak terkena Rate Limit, namun tetap mengunduh semua file audio ke cache latar belakang
+                    await new Promise(r => setTimeout(r, 800)); 
+                } 
+            }
+            if (cloudSpan) cloudSpan.innerText = "AI Cloud ✨";
+        }
+
+        // ==========================================
+        // UI HELPERS & STORY RENDERING
+        // ==========================================
+        function updateStorySelectUI() {
+            const sSelect = document.getElementById('storySelect'); if(!sSelect) return;
+            let h = `<optgroup label="Sistem">
+                        <option value="free_talk">🗣️ Mode Bebas (Free Talk)</option>
+                     </optgroup>
+                     <optgroup label="Default">
+                        <option value="cartoon">Upin & Fizi (Demo)</option>
+                     </optgroup>`;
+            
+            const ks = Object.keys(savedStories).sort((a,b) => b-a); 
+            if (ks.length > 0) { 
+                h += `<optgroup label="Riwayat Tersimpan"><option value="open_playlist">🕒 Buka Riwayat Lengkap...</option>`; 
+                ks.slice(0, 8).forEach(k => { 
+                    if(activeStoryId === `saved_${k}`) {
+                        h += `<option value="saved_${k}">💾 ${savedStories[k].title}</option>`; 
+                    } else {
+                        h += `<option value="saved_${k}">• ${savedStories[k].title}</option>`;
+                    }
+                }); 
+                h += `</optgroup>`; 
+            }
+            sSelect.innerHTML = h; sSelect.value = activeStoryId;
+        }
+
+        function changeFontSize(step) { fontSizeLevel = Math.max(0, Math.min(3, fontSizeLevel + step)); renderStory(); }
+        function copyToClipboard(text, btn) { const textArea = document.createElement("textarea"); textArea.value = text; document.body.appendChild(textArea); textArea.select(); try { document.execCommand('copy'); const originalHtml = btn.innerHTML; btn.innerHTML = '✅'; setTimeout(() => { btn.innerHTML = originalHtml; }, 2000); } catch (err) {} document.body.removeChild(textArea); }
+        function handleWordClick(el, word, key, idx, sent) { if(isChallengeMode && !el.classList.contains('revealed')) { el.classList.add('revealed'); return; } showDetail(word, key, idx, sent); }
+        
+        function showDetail(word, key, sIdx, sent) {
+            let story = savedStories[key.replace('saved_', '')] || defaultStories[key];
+            const info = story.sentences[sIdx].analysis ? story.sentences[sIdx].analysis[word.toLowerCase()] : null;
+            currentWord = word; currentSentence = sent; 
+            document.getElementById('activeWord').innerText = word; 
+            document.getElementById('aiAnalysisText').classList.add('hidden'); // Sembunyikan analisis panjang
+            document.getElementById('wordDetails').classList.remove('hidden'); // Tampilkan kotak kamus
+            if(info) { 
+                document.getElementById('wordPhonetic').innerText = `/${info.phonetic || '...'}/`; 
+                document.getElementById('wordLiteral').innerText = info.literal || "-"; 
+                document.getElementById('wordContext').innerText = info.context || "-"; 
+                const culture = document.getElementById('wordCultureBox'); 
+                if(info.cultural_note) { culture.classList.remove('hidden'); document.getElementById('wordCulture').innerText = info.cultural_note; } else culture.classList.add('hidden'); 
+            } else {
+                document.getElementById('wordPhonetic').innerText = `/.../`; 
+                document.getElementById('wordLiteral').innerText = "-"; 
+                document.getElementById('wordContext').innerText = "-"; 
+                document.getElementById('wordCultureBox').classList.add('hidden');
+            }
+            const wordCard = document.getElementById('wordCard'); wordCard.classList.remove('hidden'); wordCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        async function generateAIStory() {
+            const prompt = document.getElementById('aiPrompt').value; const cefr = document.getElementById('cefrLevel').value; const mood = document.getElementById('contentMood').value;
+            const langSelect = document.getElementById('targetLanguage'); const langCode = langSelect.value; const langName = langSelect.options[langSelect.selectedIndex].text.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim();
+            if (!prompt) { showCustomAlert("Silakan masukkan topik!"); return; }
+            document.getElementById('loadingOverlay').classList.remove('hidden'); document.getElementById('genBtn').disabled = true;
+            
+            const flashback = FlashbackTracker.getFailedWords().sort(() => 0.5 - Math.random()).slice(0, 3);
+            const baseLang = langCode === 'id-ID' ? 'English' : 'Indonesian'; const randomSeed = Math.floor(Math.random() * 1000000); 
+            
+            // PERBAIKAN: Array "Suntikan Kreativitas" (Plot Twist) untuk memaksa AI membuat alur cerita yang ekstrem dan selalu berbeda
+            const twists = [
+                "sebuah kesalahpahaman yang konyol", 
+                "alasan yang sangat absurd tapi realistis", 
+                "ketegangan pasif-agresif tingkat tinggi", 
+                "gangguan dari objek atau orang ketiga yang aneh", 
+                "fokus berlebihan pada detail yang sangat sepele", 
+                "perubahan emosi yang sangat mendadak", 
+                "keheningan yang canggung atau realisasi yang memalukan", 
+                "reaksi over-dramatis terhadap hal kecil",
+                "sebuah rahasia memalukan yang tidak sengaja terungkap",
+                "cara penyelesaian masalah yang sangat tidak biasa"
+            ];
+            const selectedTwist = twists[Math.floor(Math.random() * twists.length)];
+            
+            const systemPrompt = `You are an expert native ${langName} scriptwriter. Create a highly realistic, engaging everyday conversation (8-12 lines) based on the user's topic. RANDOM SEED: ${randomSeed}.
+            CRITICAL RULES:
+            0. DYNAMIC CHARACTER COUNT & DIVERSE NAMES: Randomly choose to have 2, 3, or sometimes 4 distinct speakers in the conversation (unless mood is 'romantic', then exactly 2). You MUST use culturally accurate names for ${langName} in Latin script. NEVER use your default/overused names (like Maya, Budi, Indah, Bambang, Siti, Andi, John, Jane). Invent completely new, rare, or modern names EVERY SINGLE TIME based on the random seed!
+            1. ZERO-REPETITION MANDATE (CRUCIAL): You are FORBIDDEN from using standard tropes. If the topic is "late for work", DO NOT use traffic or oversleeping. If "bargaining", DO NOT use shoes or clothes. You MUST heavily incorporate this specific creative constraint: "${selectedTwist}". Invent a radically different micro-context, items, and environment every single time.
+            2. ULTRA-NATURAL NATIVE SPEECH: DO NOT use formal textbook grammar for casual scenes. Write the dialogue exactly like a native podcast transcript or real-life recording. If the language is Indonesian, use RAW JAKARTA STREET SLANG (gue, lu, udahlah, emang, sih, dong, kok). Use natural conversational flow.
+            3. EXPRESSIVE PUNCTUATION: Use UPPERCASE words, exclamation marks (!!!), and question marks (???) to naturally guide the voice actor's emotion and pitch.
+            4. GENDER & NAME CONSISTENCY: Accurately assign "male" or "female" to the gender field based on the character's biological name. Maintain exactly the same name and gender for each character throughout the entire dialogue.
+            5. NUANCED EMOTIONAL MODULATION: Conversations build up naturally. Assign a simple English "emotion_cue" (max 2 words). If mood is 'neutral', STRICTLY use 'calm' or 'casual' to keep the voice stable. DO NOT use extreme actions or emotions like crying, sighing, panting, hesitating, furious, yelling, or stuttering. Keep the flow natural and stable.
+            6. ONLY SPOKEN TEXT: The "text" field MUST ONLY contain spoken words. NO brackets, NO actions, NO sound effects inside the text. Never use English unless the target language is English!
+            7. BALANCED UNPREDICTABLE ENDINGS: Mix up the endings! About 50% of the time, provide a happy/funny resolution. The other 50% of the time, make it realistic and messy (awkward silence, hanging up, or walking away). 
+            8. Provide accurate pronunciation guides in the "phonetic" field.
+            9. The "title", "scene", "literal", "context", and "cultural_note" fields MUST be written in ${baseLang.toUpperCase()}.
+            10. CEFR Level: ${cefr}. Mood: ${mood}. ${flashback.length > 0 ? 'Incorporate these failed words naturally: [' + flashback.join(', ') + '].' : ''}
+            11. STRICT JSON FORMAT.
+            Return ONLY a valid JSON object matching this schema exactly: { "title": "Title in ${baseLang}", "scene": "Scene description in ${baseLang}", "languageCode": "${langCode}", "languageName": "${langName}", "mood": "${mood}", "level": "${cefr}", "sentences": [ { "speaker": "Name", "gender": "male/female", "emotion_cue": "English instruction for voice actor", "text": "[DIALOGUE IN ${langName.toUpperCase()}]", "phonetic": "[Pronunciation guide]", "id": "[Formal Translation in ${baseLang}]", "id_slang": "[Slang Translation]", "analysis": { "word": { "literal": "[Literal meaning in ${baseLang}]", "context": "[Contextual meaning in ${baseLang}]", "cultural_note": "[Cultural note in ${baseLang}]", "phonetic": "[Pronunciation guide]" } } } ] }`;
+
+            try {
+                // PERBAIKAN: Menggunakan Temperature (temp) = 1.7 untuk menghancurkan kebiasaan AI dan membuatnya berimajinasi seliar mungkin
+                const res = await fetchGemini(`Topic: ${prompt}. Constraint: ${selectedTwist}. Language: ${langName}`, systemPrompt, true, 1.7);
+                const generatedStory = JSON.parse(res); 
+                
+                // AUTO-SAVE KE HISTORY
+                const id = Date.now().toString(); 
+                savedStories[id] = generatedStory; 
+                localStorage.setItem('polyglotReaderSaved_v1', JSON.stringify(savedStories)); 
+                
+                activeStoryId = `saved_${id}`; 
+                updateStorySelectUI(); 
+                renderStory();
+            } catch (err) { showCustomAlert("Gagal memuat skenario yang valid dari AI. Silakan coba klik Generate lagi."); } 
+            finally { document.getElementById('loadingOverlay').classList.add('hidden'); document.getElementById('genBtn').disabled = false; }
+        }
+
+        function assignVoicesToStory(story) {
+            if (!story.voiceMap) story.voiceMap = {};
+            const male = ['Fenrir', 'Charon', 'Orus', 'Iapetus']; const female = ['Aoede', 'Kore', 'Zephyr', 'Leda'];
+            let speakerGenders = {};
+            story.sentences.forEach(s => { let clean = (s.speaker || "Bot").replace(/[^\p{L}\p{N}]/gu, '').toUpperCase(); if (!clean) clean = "BOT"; if (!speakerGenders[clean]) { let g = (s.gender || "male").toLowerCase(); let isF = g.includes('f') || g.includes('wanita') || g.includes('perempuan'); if (!s.gender && (clean.endsWith('A') || clean.endsWith('I') || clean.endsWith('Y'))) isF = true; speakerGenders[clean] = isF ? 'female' : 'male'; } });
+            story.sentences.forEach(s => {
+                let clean = (s.speaker || "Bot").replace(/[^\p{L}\p{N}]/gu, '').toUpperCase(); if (!clean) clean = "BOT"; if (!speakerGenders[clean]) speakerGenders[clean] = 'male'; s.gender = speakerGenders[clean];
+                if (!story.voiceMap[clean]) { const isFemale = speakerGenders[clean] === 'female'; let pool = isFemale ? female : male; let used = Object.values(story.voiceMap); let available = pool.filter(v => !used.includes(v)); if (available.length === 0) available = pool; let hash = 0; for (let j = 0; j < clean.length; j++) hash += clean.charCodeAt(j); story.voiceMap[clean] = available[Math.abs(hash) % available.length]; }
+                s.assignedVoice = story.voiceMap[clean]; s.assignedGender = speakerGenders[clean]; s.cleanSpeakerKey = clean; 
+            });
+        }
+
+        function processSentenceHTML(sentenceObj, storyKey, sIdx) {
+            let tempHtml = sentenceObj.text || ""; const placeholders = []; const safeText = tempHtml.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            if (sentenceObj.analysis) { const keys = Object.keys(sentenceObj.analysis).sort((a,b) => b.length - a.length); keys.forEach((phrase, i) => { const cleanPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); const regex = new RegExp(`\\b${cleanPhrase}\\b`, 'gi'); tempHtml = tempHtml.replace(regex, (match) => { placeholders[i] = `<span class="word-highlight font-extrabold text-blue-700 bg-blue-100/30 border-b-2 border-blue-400 cursor-pointer px-1 rounded transition-all" onclick="handleWordClick(this, '${phrase.replace(/'/g, "\\'")}', '${storyKey}', ${sIdx}, '${safeText}')">${match}</span>`; return `{{{${i}}}}`; }); }); }
+            let parts = tempHtml.split(/(\{\{\{\d+\}\}\})/); return parts.map(part => { if (/^\{\{\{\d+\}\}\}$/.test(part)) { let idx = parseInt(part.replace(/\D/g, '')); return placeholders[idx] || ""; } return part; }).join('');
+        }
+
+        function renderStory() {
+            if(isRoleplayActive) stopRoleplay(); if(isTheaterMode) stopTheaterMode();
+            const readingArea = document.getElementById('contentBody');
+            const sceneBox = document.getElementById('sceneBox'); 
+
+            if (activeStoryId === 'free_talk') {
+                document.getElementById('contentTitle').innerText = "Mode Bebas (Free Talk)";
+                document.getElementById('closeStoryBtn').classList.add('hidden');
+                document.getElementById('langBadge').classList.add('hidden');
+                document.getElementById('moodBadge').classList.add('hidden');
+                document.getElementById('cefrBadge').classList.add('hidden');
+                sceneBox.classList.add('hidden');
+                
+                const langSelect = document.getElementById('targetLanguage'); 
+                const langName = langSelect.options[langSelect.selectedIndex].text.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim();
+                
+                readingArea.innerHTML = `<div class="text-center py-16 animate-in fade-in zoom-in duration-500">
+                    <div class="text-7xl mb-6">🗣️</div>
+                    <h3 class="text-2xl font-black text-slate-800 mb-2">Siap Mengobrol Spontan</h3>
+                    <p class="text-slate-500 font-medium mb-8">Anda berada di Mode Bebas untuk bahasa <strong class="text-blue-600">${langName}</strong>.</p>
+                    <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl inline-block max-w-lg text-left shadow-inner">
+                        <p class="text-sm text-blue-800 mb-2 font-bold uppercase tracking-widest">Cara Bermain:</p>
+                        <ul class="text-sm text-blue-700 space-y-2 list-disc list-inside ml-4 font-medium">
+                            <li>Tekan tombol merah <strong>Ujian Telepon</strong> di bawah.</li>
+                            <li>Mikrofon akan langsung menyala. Anda bisa menyapa AI duluan (seperti "Halo!").</li>
+                            <li>Jika Anda diam selama 4 detik, AI yang akan inisiatif mengajak Anda mengobrol!</li>
+                        </ul>
+                    </div>
+                </div>`;
+                return;
+            }
+
+            let story = getCurrentStory();
+            if (!story || !story.sentences) return;
+            
+            assignVoicesToStory(story);
+            
+            const baseFlag = story.languageCode === 'id-ID' ? '🇬🇧' : '🇮🇩'; 
+            const titleEl = document.getElementById('subsLabel'); if (titleEl) titleEl.innerText = `Subs ${baseFlag}`;
+            document.getElementById('contentTitle').innerText = story.title || "Untitled";
+            document.getElementById('closeStoryBtn').classList.remove('hidden');
+            
+            const lb = document.getElementById('langBadge'); if (lb) { lb.innerText = story.languageName; lb.classList.remove('hidden'); }
+            const mb = document.getElementById('moodBadge'); if (mb && story.mood && story.mood !== 'neutral') { mb.innerText = story.mood; mb.classList.remove('hidden'); } else if(mb) mb.classList.add('hidden');
+            const cb = document.getElementById('cefrBadge'); if (cb && story.level) { cb.innerText = getLocalizedLevel(story.languageCode, story.level); cb.classList.remove('hidden'); } else if(cb) cb.classList.add('hidden');
+            
+            readingArea.innerHTML = ""; 
+            if (story.scene) { document.getElementById('sceneDescription').innerText = story.scene; sceneBox.classList.remove('hidden'); } else sceneBox.classList.add('hidden');
+            
+            const isAudioFirst = document.getElementById('toggleAudioFirst')?.checked || false; const isTransActive = document.getElementById('toggleTranslate')?.checked || false; const isSlangActive = document.getElementById('toggleSlang')?.checked || false;
+
+            story.sentences.forEach((s, i) => {
+                const div = document.createElement('div'); div.className = "dialog-row group relative p-3 bg-white hover:bg-slate-50 border border-transparent hover:border-slate-200 rounded-2xl transition-all flex gap-3 items-start";
+                const cleanSpk = s.cleanSpeakerKey || 'BOT'; const isFemaleVoice = s.assignedGender === 'female';
+                let bgGradient = isFemaleVoice ? "from-pink-100 to-rose-200 text-rose-700" : "from-indigo-100 to-blue-200 text-blue-700";
+                const safeText = (s.text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+
+                div.innerHTML = `<div class="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${bgGradient} rounded-full flex items-center justify-center font-bold shadow-inner mt-1">${(s.speaker||'?').charAt(0).toUpperCase()}</div>
+                    <div class="flex-1 dialog-text-area overflow-hidden">
+                        <div class="flex flex-wrap justify-between items-center mb-1 gap-2">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">${s.speaker}</p>
+                            <div class="flex gap-1 z-20">
+                                <button onclick="checkPronunciation(${i}, this, 'res-${i}')" class="text-red-400 hover:text-red-600 p-1.5 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="Latih Pelafalan">🎤</button>
+                                <button id="btn-speak-${i}" onclick="speakSentence(${i}, true, this)" class="text-blue-400 hover:text-blue-600 p-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="Putar Audio">🔊</button>
+                                <button onclick="copyToClipboard('${safeText}', this)" class="text-sky-400 hover:text-sky-600 p-1.5 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors" title="Salin Teks">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                </button>
+                                <button onclick="generateParaphrase('${safeText}')" class="text-emerald-400 hover:text-emerald-600 p-1.5 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors" title="Variasi Ekspresi">🔁</button>
+                                <button onclick="explainSentenceAI('${safeText}', '${activeStoryId}', ${i})" class="text-amber-400 hover:text-amber-600 p-1.5 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title="Bedah Kalimat AI">✨</button>
+                            </div>
+                        </div>
+                        <p id="txt-${i}" class="mb-0.5 font-medium text-slate-800 ${textSizes[fontSizeLevel]} ${isAudioFirst ? 'blur-text' : ''}" onclick="this.classList.remove('blur-text')">${processSentenceHTML(s, activeStoryId, i)}</p>
+                        <p class="text-indigo-400 font-mono text-xs ${isAudioFirst ? 'blur-text' : ''}" onclick="this.classList.remove('blur-text')">/${s.phonetic || '...'}/</p>
+                        <p class="text-sm text-slate-500 font-medium hide-in-challenge ${isTransActive ? '' : 'hidden'} ${isAudioFirst ? 'blur-text' : ''}" onclick="this.classList.remove('blur-text')">${baseFlag} ${isSlangActive ? s.id_slang : s.id}</p><div id="res-${i}" class="hidden mt-2 p-3 bg-white border border-slate-200 rounded-xl text-sm"></div></div>`;
+                readingArea.appendChild(div);
+            });
+            
+            if (document.getElementById('toggleCloudVoice')?.checked) preloadCloudAudio();
+        }
+
+        function toggleTheaterMode() {
+            if(activeStoryId === 'free_talk') return showCustomAlert("Mode Teater tidak tersedia di Mode Bebas.");
+            isTheaterMode = !isTheaterMode; document.getElementById('readingAreaContainer').classList.toggle('mode-teater', isTheaterMode);
+            let story = getCurrentStory();
+            if(isTheaterMode) { theaterIndex = 0; AmbientEngine.play(story?.mood || 'neutral'); document.getElementById('theaterControls').classList.remove('hidden'); playNextTheaterLine(); }
+            else { AmbientEngine.stop(); document.getElementById('theaterControls').classList.add('hidden'); }
+        }
+
+        function playNextTheaterLine() {
+            if(!isTheaterMode || isTheaterPaused) return; const rows = document.querySelectorAll('.dialog-row'); rows.forEach(r => r.classList.remove('karaoke-active'));
+            let story = getCurrentStory();
+            if(!story || theaterIndex >= story.sentences.length) { toggleTheaterMode(); return; }
+            if(rows[theaterIndex]) { rows[theaterIndex].classList.add('karaoke-active'); rows[theaterIndex].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            speakSentence(theaterIndex, false).then(() => { theaterIndex++; setTimeout(playNextTheaterLine, 300); });
+        }
+        function pauseResumeTheater() {
+            isTheaterPaused = !isTheaterPaused; const btn = document.getElementById('btnPauseTheater');
+            if (isTheaterPaused) { btn.innerHTML = `▶️`; if ('speechSynthesis' in window) window.speechSynthesis.pause(); if (window.currentFallbackAudio) window.currentFallbackAudio.pause(); if (AmbientEngine.ctx && AmbientEngine.ctx.state === 'running') AmbientEngine.ctx.suspend(); } 
+            else { btn.innerHTML = `⏸️`; if ('speechSynthesis' in window) window.speechSynthesis.resume(); if (window.currentFallbackAudio) window.currentFallbackAudio.play(); if (AmbientEngine.ctx && AmbientEngine.ctx.state === 'suspended') AmbientEngine.ctx.resume(); playNextTheaterLine(); }
+        }
+
+        async function analyzeWithAI() {
+            const el = document.getElementById('aiAnalysisText'); 
+            el.classList.remove('hidden'); 
+            el.innerHTML = "Menganalisis...";
+            let story = getCurrentStory();
+            const baseLang = story?.languageCode === 'id-ID' ? 'English' : 'Indonesian';
+            try { const res = await fetchGemini(`Analyze: ${currentWord} in ${currentSentence}`, `Tutor ${story?.languageName}. Explain in ${baseLang}.`, false); el.innerHTML = res.replace(/\n/g, '<br>'); } catch(e) { el.innerHTML = "Gagal memuat analisis AI."; }
+        }
+
+        async function explainSentenceAI(sent, key, i) { 
+            document.getElementById('activeWord').innerText = "Penjelasan Kalimat"; 
+            document.getElementById('wordPhonetic').innerText = "/grammar/";
+            document.getElementById('wordCard').classList.remove('hidden'); 
+            document.getElementById('wordDetails').classList.add('hidden'); // PERBAIKAN: Sembunyikan kotak kamus karena ini seluruh kalimat
+            document.getElementById('aiAnalysisText').classList.add('hidden'); 
+            currentWord = "Kalimat Lengkap"; 
+            currentSentence = sent; 
+            await analyzeWithAI(); 
+        }
+
+        async function generateParaphrase(sent) { 
+            document.getElementById('activeWord').innerText = "Variasi Kalimat"; 
+            document.getElementById('wordPhonetic').innerText = "/paraphrase/";
+            document.getElementById('wordCard').classList.remove('hidden'); 
+            document.getElementById('wordDetails').classList.add('hidden'); // PERBAIKAN: Sembunyikan kotak kamus
+            const el = document.getElementById('aiAnalysisText'); 
+            el.classList.remove('hidden'); 
+            el.innerHTML = "Mencari variasi..."; 
+            let story = getCurrentStory(); 
+            const baseLang = story?.languageCode === 'id-ID' ? 'English' : 'Indonesian'; 
+            try { const res = await fetchGemini(`Berikan 3 variasi kalimat (Formal, Casual, Slang) untuk: "${sent}"`, `Expert native speaker. Explain in ${baseLang}.`, false); el.innerHTML = res.replace(/\n/g, '<br>'); document.getElementById('wordCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) { el.innerHTML = "Gagal memuat variasi."; } 
+        }
+
+        function toggleRoleplay() {
+            if(activeStoryId === 'free_talk') return showCustomAlert("Mode Simulasi tidak tersedia di Mode Bebas.");
+            let story = getCurrentStory();
+            if(!story) return; const chars = [...new Set(story.sentences.map(s => (s.speaker||'Bot').replace(/[\(\[].*?[\)\]]/g, '').trim()))]; document.getElementById('roleplayCharacters').innerHTML = chars.map(c => `<button onclick="startRoleplay('${c.replace(/'/g,"\\")}')" class="w-full p-4 bg-white border rounded-2xl font-bold hover:bg-indigo-50 transition-all">Jadi ${c}</button>`).join(''); document.getElementById('roleplayModal').classList.remove('hidden'); 
+        }
+        function closeRoleplayModal() { document.getElementById('roleplayModal').classList.add('hidden'); }
+        function startRoleplay(c) { closeRoleplayModal(); isRoleplayActive = true; roleplayCharacter = c; currentRoleplayIndex = 0; playRPLine(); }
+        function stopRoleplay() { isRoleplayActive = false; const rows = document.querySelectorAll('.dialog-row'); rows.forEach(r => { r.classList.remove('roleplay-active-line', 'roleplay-dim'); const btn = r.querySelector('#btnLanjutRoleplay'); if(btn) btn.remove(); }); }
+        function playRPLine() {
+            if(!isRoleplayActive) return; let story = getCurrentStory();
+            if(currentRoleplayIndex >= story.sentences.length) { isRoleplayActive = false; showCustomAlert("Selesai!"); renderStory(); return; }
+            const s = story.sentences[currentRoleplayIndex]; const rows = document.querySelectorAll('.dialog-row'); rows.forEach(r => { r.classList.remove('roleplay-active-line'); r.classList.add('roleplay-dim'); });
+            if(rows[currentRoleplayIndex]) { rows[currentRoleplayIndex].classList.remove('roleplay-dim'); rows[currentRoleplayIndex].classList.add('roleplay-active-line'); rows[currentRoleplayIndex].scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            const spk = (s.speaker || "Bot").replace(/[\(\[].*?[\)\]]/g, '').trim();
+            if (spk === roleplayCharacter) { const btn = document.createElement('button'); btn.id = 'btnLanjutRoleplay'; btn.className = "mt-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold w-full animate-pulse"; btn.innerText = "Lanjut (Klik setelah Anda bicara) →"; btn.onclick = () => { btn.remove(); currentRoleplayIndex++; playRPLine(); }; rows[currentRoleplayIndex].querySelector('.dialog-text-area').appendChild(btn); } 
+            else { speakSentence(currentRoleplayIndex, false).then(() => { currentRoleplayIndex++; setTimeout(playRPLine, 200); }); }
+        }
+
+        // ==========================================
+        // FITUR BARU: LIVE CALL (TURBO MODE & FAILSAFE JSON) 📞
+        // ==========================================
+        function startLiveCall() {
+            let isFreeTalk = activeStoryId === 'free_talk';
+            let story = null;
+            
+            if (!isFreeTalk) {
+                story = getCurrentStory();
+                if (!story || !story.sentences) { 
+                    showCustomAlert("Silakan generate cerita atau pilih Mode Bebas (Free Talk) dari dropdown!"); 
+                    return; 
+                }
+            }
+
+            const langSelect = document.getElementById('targetLanguage'); 
+            const langCode = isFreeTalk ? langSelect.value : story.languageCode;
+            const langName = isFreeTalk ? langSelect.options[langSelect.selectedIndex].text.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim() : story.languageName;
+            
+            // PERBAIKAN: Menangkap Level CEFR dari Dropdown
+            const cefrDropdown = document.getElementById('cefrLevel');
+            const currentCEFR = cefrDropdown.value;
+            const cefrTitle = cefrDropdown.options[cefrDropdown.selectedIndex].text;
+
+            if (isFreeTalk) {
+                callerIdentity = { name: "Native Tutor", voice: "Aoede", isFemale: true, lang: langCode, langName: langName };
+            } else {
+                let speakerObj = story.sentences[0];
+                callerIdentity = {
+                    name: speakerObj.speaker.replace(/[\(\[].*?[\)\]]/g, '').trim(),
+                    voice: speakerObj.assignedVoice,
+                    isFemale: speakerObj.assignedGender === 'female',
+                    lang: story.languageCode,
+                    langName: story.languageName
+                };
+            }
+
+            isLiveCallActive = true;
+            document.getElementById('callOverlay').classList.remove('hidden');
+            document.getElementById('callName').innerText = callerIdentity.name;
+            document.getElementById('callTranscript').innerHTML = `<p class="text-slate-400 text-xs text-center mb-4">${isFreeTalk ? 'Mode Bebas Aktif. Ngobrol spontan dalam ' + langName : 'Mode Skenario Aktif.'}</p>`;
+            document.getElementById('callAvatar').innerHTML = (callerIdentity.isFemale ? '👩' : '👨') + '<div id="callPulseRing" class="absolute inset-0 rounded-full border-2 border-indigo-400 opacity-0"></div>';
+
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (window.currentFallbackAudio) { window.currentFallbackAudio.pause(); window.currentFallbackAudio = null; }
+
+            // PERBAIKAN: Memasukkan Level CEFR secara Paksa ke dalam Otak AI
+            let callPrompt = "";
+            if (isFreeTalk) {
+                callPrompt = `You are a friendly native speaker and language tutor of ${langName}. We are having a fast-paced impromptu voice call. Speak ONLY in ${langName}. 
+                CRITICAL RULES:
+                0. STRICT PROFICIENCY LEVEL: You MUST strictly adapt your vocabulary, grammar complexity, and speaking style to match the user's proficiency level: ${currentCEFR} (${cefrTitle}). If A1/A2, use very simple words and short sentences. If B1/B2, use intermediate flow. If C1/C2, use advanced idioms and complex structures.
+                1. Reply in MAXIMUM 1-2 SHORT SENTENCES to keep latency low.
+                2. If I say "[[INITIATE]]", break the silence by warmly greeting me based on my ${currentCEFR} level.
+                3. DO NOT USE EMOJIS EVER. NO emojis in your response.
+                4. Keep emotions stable. ONLY output valid JSON format: {"text": "your spoken response in ${langName}", "translation_id": "accurate Indonesian translation", "emotion": "calm/happy"}`;
+            } else {
+                callPrompt = `You are ${callerIdentity.name} from this scenario: "${story.scene}". We are having a fast-paced roleplay voice call. Speak ONLY in ${callerIdentity.langName}. 
+                CRITICAL RULES:
+                0. STRICT PROFICIENCY LEVEL: You MUST strictly adapt your vocabulary and grammar complexity to match the user's proficiency level: ${currentCEFR} (${cefrTitle}).
+                1. Reply in MAXIMUM 1-2 SHORT SENTENCES to keep latency low.
+                2. If I say "[[INITIATE]]", break the silence by starting the conversation based on the scenario immediately.
+                3. DO NOT USE EMOJIS EVER. NO emojis in your response.
+                4. Keep the "emotion" field stable, appropriate for the scene. ONLY output valid JSON format: {"text": "your spoken response in ${callerIdentity.langName}", "translation_id": "accurate Indonesian translation", "emotion": "calm/angry/happy/sad"}`;
+            }
+
+            liveCallHistory = [{ role: "user", parts: [{ text: callPrompt }] }];
+            
+            document.getElementById('callStatus').innerText = `Mic Terbuka... (Bicara dalam bahasa ${callerIdentity.langName})`;
+            startCallMic();
+
+            clearTimeout(autoGreetTimer);
+            autoGreetTimer = setTimeout(() => {
+                // PERBAIKAN: AI hanya akan nyapa duluan JIKA ini baru awal telepon (belum ada chat)
+                if (isLiveCallActive && liveCallHistory.length === 1) {
+                    if (callSpeechRec) { try { callSpeechRec.abort(); } catch(e){} }
+                    isMicListening = false;
+                    const micBtn = document.getElementById('callMicBtn');
+                    if (micBtn) { micBtn.classList.remove('bg-rose-500'); micBtn.classList.add('bg-slate-700'); }
+                    generateCallResponse("[[INITIATE]]");
+                }
+            }, 6000); // Waktu tunggu dinaikkan jadi 6 detik agar Anda tidak dipotong
+        }
+
+        function executeMicStart() {
+            if (!isLiveCallActive || isMicListening) return;
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) { showCustomAlert("Browser Anda tidak mendukung Mic."); return; }
+
+            if (callSpeechRec) { try { callSpeechRec.abort(); } catch(e){} }
+
+            callSpeechRec = new SpeechRec();
+            callSpeechRec.lang = callerIdentity.lang;
+            callSpeechRec.interimResults = false;
+            callSpeechRec.maxAlternatives = 1;
+
+            const micBtn = document.getElementById('callMicBtn');
+            const status = document.getElementById('callStatus');
+
+            // PERBAIKAN: Kunci status mic SEBELUM onstart dipanggil agar tidak ada perintah yang bertumpuk (Racing Condition)
+            isMicListening = true;
+
+            callSpeechRec.onstart = () => { 
+                micBtn.classList.add('bg-rose-500'); 
+                micBtn.classList.remove('bg-slate-700');
+                status.innerText = `Mendengarkan (${callerIdentity.langName})...`;
+            };
+            
+            callSpeechRec.onresult = (e) => {
+                clearTimeout(autoGreetTimer); 
+                const speech = e.results[0][0].transcript;
+                // isMicListening akan di-reset otomatis oleh event onend
+                generateCallResponse(speech);
+            };
+            
+            callSpeechRec.onerror = (e) => { 
+                if(e.error === 'not-allowed') {
+                    status.innerText = "Izin mic ditolak browser.";
+                } else if(e.error === 'no-speech') {
+                    status.innerText = `Diam terdeteksi. Sentuh 🎤.`; 
+                } else if(e.error === 'network') {
+                    status.innerText = `Sinyal terputus. Sentuh 🎤 lagi.`;
+                } else if(e.error === 'aborted') {
+                    status.innerText = `Mic ditutup. Sentuh 🎤.`;
+                } else {
+                    status.innerText = `Terhenti (${e.error}). Sentuh 🎤.`;
+                }
+            };
+            
+            callSpeechRec.onspeechend = () => { 
+                micBtn.classList.remove('bg-rose-500'); 
+                micBtn.classList.add('bg-slate-700');
+            };
+
+            // PERBAIKAN: Tambahkan event onend sebagai jaring pengaman agar status mic selalu di-reset dengan benar
+            callSpeechRec.onend = () => {
+                isMicListening = false;
+                if (micBtn) {
+                    micBtn.classList.remove('bg-rose-500'); 
+                    micBtn.classList.add('bg-slate-700');
+                }
+            };
+
+            try { 
+                callSpeechRec.start(); 
+            } catch(e) { 
+                isMicListening = false; 
+                status.innerText = "Gagal menyalakan mic. Sentuh 🎤 lagi.";
+            }
+        }
+
+        function toggleCallMic() {
+            clearTimeout(autoGreetTimer);
+            if (isMicListening && callSpeechRec) {
+                try { callSpeechRec.abort(); } catch(e){} // Biarkan onend yang mereset status isMicListening
+                document.getElementById('callStatus').innerText = "Mic dimatikan. Sentuh 🎤.";
+            } else {
+                executeMicStart();
+            }
+        }
+
+        function startCallMic() {
+            if (!isLiveCallActive) return;
+            setTimeout(() => {
+                executeMicStart();
+            }, 400);
+        }
+
+        async function generateCallResponse(userText = null) {
+            if (!isLiveCallActive) return;
+            clearTimeout(autoGreetTimer); 
+
+            const status = document.getElementById('callStatus');
+            const ring = document.getElementById('callPulseRing');
+
+            if (userText) {
+                const lastMsg = liveCallHistory[liveCallHistory.length - 1];
+                let displayTxt = userText === "[[INITIATE]]" ? "(Menunggu AI menyapa...)" : userText;
+                
+                if (lastMsg && lastMsg.role === "user") {
+                    lastMsg.parts[0].text += " " + userText;
+                } else {
+                    liveCallHistory.push({ role: "user", parts: [{ text: userText }] });
+                }
+
+                if(userText !== "[[INITIATE]]") {
+                    document.getElementById('callTranscript').innerHTML += `<div class="mb-3"><p class="text-white"><strong>Anda:</strong> ${displayTxt}</p></div>`;
+                }
+            }
+
+            if (liveCallHistory.length > 7) {
+                let newHistory = [liveCallHistory[0], ...liveCallHistory.slice(-6)];
+                if (newHistory[1].role === "model") {
+                    newHistory = [liveCallHistory[0], ...liveCallHistory.slice(-5)];
+                }
+                liveCallHistory = newHistory;
+            }
+
+            status.innerText = `${callerIdentity.name} sedang berpikir...`;
+            if (ring) ring.classList.add('call-pulse');
+
+            try {
+                if (liveCallAbortController) liveCallAbortController.abort();
+                liveCallAbortController = new AbortController();
+                const timeoutId = setTimeout(() => liveCallAbortController.abort(), 10000);
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const payload = { contents: liveCallHistory, generationConfig: { responseMimeType: "application/json" } };
+
+                const response = await fetch(url, { method: 'POST', body: JSON.stringify(payload), signal: liveCallAbortController.signal });
+                clearTimeout(timeoutId);
+                
+                if (!isLiveCallActive) return; 
+
+                const data = await response.json();
+                if(data.error) throw new Error(data.error.message);
+                
+                let rawText = data.candidates[0].content.parts[0].text;
+                
+                // PERBAIKAN: Menambahkan dukungan fallback "translation_id"
+                let parsed = { text: "Maaf, saya tidak mengerti.", translation_id: "Maaf, saya tidak mengerti.", emotion: "neutral" };
+                try {
+                    const start = rawText.indexOf('{');
+                    const end = rawText.lastIndexOf('}');
+                    if(start !== -1 && end !== -1) {
+                        parsed = JSON.parse(rawText.substring(start, end + 1));
+                    } else {
+                        parsed.text = rawText.replace(/```json/g,'').replace(/```/g,'').trim();
+                        parsed.translation_id = "Terjemahan tidak tersedia.";
+                    }
+                } catch(err) {
+                    parsed.text = rawText.replace(/```json/g,'').replace(/```/g,'').trim();
+                    parsed.translation_id = "Terjemahan tidak tersedia.";
+                }
+
+                liveCallHistory.push({ role: "model", parts: [{ text: rawText }] });
+                
+                // PERBAIKAN UI: Menampilkan teks target dan terjemahan Indonesia di bawahnya
+                document.getElementById('callTranscript').innerHTML += `
+                    <div class="mb-3">
+                        <p class="text-indigo-300"><strong>${callerIdentity.name}:</strong> ${parsed.text}</p>
+                        <p class="text-xs text-indigo-400/70 italic mt-1 ml-2 border-l-2 border-indigo-500/30 pl-2">🇮🇩 ${parsed.translation_id || "..."}</p>
+                    </div>`;
+                const transcriptBox = document.getElementById('callTranscript');
+                transcriptBox.scrollTop = transcriptBox.scrollHeight;
+
+                status.innerText = `${callerIdentity.name} berbicara...`;
+
+                await smartSpeak(parsed.text, callerIdentity.lang, callerIdentity.langName, callerIdentity.voice, 'neutral', () => {
+                    if (isLiveCallActive) {
+                        if (ring) ring.classList.remove('call-pulse');
+                        status.innerText = `Giliran Anda! Sentuh 🎤 untuk bicara.`;
+                        startCallMic(); 
+                    }
+                }, true, null, parsed.emotion, callerIdentity.isFemale, callerIdentity.name);
+
+            } catch (e) {
+                if (e.name === 'AbortError') return; 
+                
+                console.error(e);
+                status.innerText = "Koneksi lambat (Terlalu banyak permintaan). Sabar...";
+                if (ring) ring.classList.remove('call-pulse');
+                
+                if(liveCallHistory[liveCallHistory.length-1].role === "user") {
+                    liveCallHistory.pop();
+                }
+
+                setTimeout(() => { if(isLiveCallActive) startCallMic(); }, 2500);
+            }
+        }
+
+        function endLiveCall() {
+            isLiveCallActive = false;
+            isMicListening = false;
+            clearTimeout(autoGreetTimer);
+            
+            if (liveCallAbortController) {
+                liveCallAbortController.abort();
+                liveCallAbortController = null;
+            }
+            
+            if (callSpeechRec) { try { callSpeechRec.stop(); } catch(e){} }
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (window.currentFallbackAudio) { window.currentFallbackAudio.pause(); }
+            document.getElementById('callOverlay').classList.add('hidden');
+        }
+
+        // ==========================================
+        // UTILITIES
+        // ==========================================
+        function openPlaylist() { 
+            const list = document.getElementById('playlistContainer'); list.innerHTML = '';
+            const keys = Object.keys(savedStories).sort((a,b) => b-a);
+            
+            if (keys.length === 0) {
+                list.innerHTML = `<div class="text-center py-10"><p class="text-4xl mb-3">👻</p><p class="text-slate-500 font-medium">Belum ada riwayat dialog. Coba generate satu skenario!</p></div>`;
+            } else {
+                const grouped = {};
+                keys.forEach(k => {
+                    const lang = savedStories[k].languageName || 'Lainnya';
+                    if (!grouped[lang]) grouped[lang] = [];
+                    grouped[lang].push(k);
+                });
+
+                for (const lang in grouped) {
+                    let html = `<div class="mb-6"><h4 class="font-black text-slate-400 uppercase text-xs tracking-widest mb-3 border-b border-slate-200 pb-2">${lang}</h4><div class="grid grid-cols-1 md:grid-cols-2 gap-3">`;
+                    grouped[lang].forEach(k => {
+                        const story = savedStories[k];
+                        const date = new Date(parseInt(k)).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+                        html += `<div class="flex items-start justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group" onclick="loadP('${k}')">
+                            <div class="flex-1 pr-2 overflow-hidden">
+                                <h4 class="font-bold text-slate-800 text-sm truncate group-hover:text-indigo-600 transition-colors">${story.title}</h4>
+                                <p class="text-[10px] text-slate-400 mt-1.5 font-medium">${date} • Mood: ${story.mood || 'Netral'}</p>
+                            </div>
+                            <button onclick="event.stopPropagation(); if(confirm('Hapus dialog ini dari riwayat?')){delete savedStories['${k}']; localStorage.setItem('polyglotReaderSaved_v1', JSON.stringify(savedStories)); openPlaylist(); updateStorySelectUI();}" class="text-slate-300 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-2 rounded-xl transition-all">🗑️</button>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                    list.innerHTML += html;
+                }
+            }
+            document.getElementById('playlistModal').classList.remove('hidden');
+        }
+        function closePlaylist() { document.getElementById('playlistModal').classList.add('hidden'); }
+        function loadP(id) { activeStoryId = `saved_${id}`; closePlaylist(); updateStorySelectUI(); renderStory(); }
+        function closeScenario() { activeStoryId = 'free_talk'; updateStorySelectUI(); renderStory(); }
+
+        // PERBAIKAN: Fungsi updateCacheSizeUI yang sebelumnya terhapus kini dikembalikan
+        async function updateCacheSizeUI() {
+            const el = document.getElementById('cacheSizeText');
+            if (!el) return;
+            try {
+                const bytes = await MediaDB.calculateSize();
+                if (bytes === 0) el.innerText = "Kosong (0 MB)";
+                else if (bytes < 1048576) el.innerText = `${(bytes / 1024).toFixed(2)} KB`;
+                else el.innerText = `${(bytes / 1048576).toFixed(2)} MB`;
+            } catch (e) {
+                el.innerText = "Gagal memuat ukuran";
+            }
+        }
+
+        function openBackupModal() { document.getElementById('backupModal').classList.remove('hidden'); updateCacheSizeUI(); }
+        function closeBackupModal() { document.getElementById('backupModal').classList.add('hidden'); }
+        function exportData() {
+            const dataToExport = { version: "1.2", exportDate: new Date().toISOString(), stories: savedStories, stats: UserStats, flashback: FlashbackTracker.getFailedWords() };
+            const blob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a'); anchor.setAttribute("href", url); anchor.setAttribute("download", `polyglot_backup.json`);
+            document.body.appendChild(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(url);
+            closeBackupModal(); showCustomAlert("Data berhasil diekspor!");
+        }
+        function triggerImport() { document.getElementById('importFile').click(); }
+        function importData(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (data.stories) { savedStories = data.stories; localStorage.setItem('polyglotReaderSaved_v1', JSON.stringify(savedStories)); }
+                    if (data.stats) { localStorage.setItem('polyglot_stats', JSON.stringify(data.stats)); UserStats.load(); }
+                    if (data.flashback && Array.isArray(data.flashback)) { localStorage.setItem(FlashbackTracker.storageKey, JSON.stringify(data.flashback)); FlashbackTracker.updateBadge(); }
+                    updateStorySelectUI(); closeBackupModal(); showCustomAlert("Data berhasil dipulihkan."); renderStory();
+                } catch (err) { showCustomAlert("Gagal memulihkan data."); }
+            };
+            reader.readAsText(file);
+        }
+
+        function finishOnboarding() { 
+            const lvl = document.getElementById('onboardingLevel').value; const cefrEl = document.getElementById('cefrLevel'); if (cefrEl) cefrEl.value = lvl;
+            localStorage.setItem('polyglot_onboarding_done', 'true'); localStorage.setItem('polyglot_saved_level', lvl); document.getElementById('onboardingModal').classList.add('hidden'); 
+        }
+        function setPrompt(t) { document.getElementById('aiPrompt').value = t; generateAIStory(); }
+        function handleCloudToggle() { renderStory(); }
+        function toggleChallengeMode() { if(activeStoryId === 'free_talk') return showCustomAlert("Tantangan tidak tersedia di Mode Bebas."); isChallengeMode = !isChallengeMode; document.getElementById('readingAreaContainer').classList.toggle('bg-slate-900', isChallengeMode); document.getElementById('readingAreaContainer').classList.toggle('mode-tantangan', isChallengeMode); renderStory(); }
+        function stopTheaterMode() { isTheaterMode = false; document.getElementById('readingAreaContainer').classList.remove('mode-teater'); AmbientEngine.stop(); }
+        function clearMediaCache() { MediaDB.clearAll(); updateCacheSizeUI(); showCustomAlert("Audio Cache Bersih!"); }
+        function openVocabModal() { document.getElementById('vocabModal').classList.remove('hidden'); }
+        function closeVocabModal() { document.getElementById('vocabModal').classList.add('hidden'); }
+        function openRawConverter() { document.getElementById('converterModal').classList.remove('hidden'); }
+        function closeRawConverter() { document.getElementById('converterModal').classList.add('hidden'); }
+        function convertRawText() { closeRawConverter(); document.getElementById('aiPrompt').value = "Ubah Teks: " + document.getElementById('rawTextInput').value; generateAIStory(); }
+        function openStatsDashboard() { UserStats.load(); document.getElementById('statAccuracy').innerText = `${UserStats.getAccuracy()}%`; document.getElementById('statWords').innerText = UserStats.correct; document.getElementById('statAttempts').innerText = UserStats.attempts; document.getElementById('statsModal').classList.remove('hidden'); }
+        function closeStatsDashboard() { document.getElementById('statsModal').classList.add('hidden'); }
+
+        // ==========================================
+        // LOGIKA DUEL FONETIK (MINIMAL PAIR SHOWDOWN)
+        // ==========================================
+        function openDuelModal() {
+            if(activeStoryId === 'free_talk') return showCustomAlert("Mode Duel butuh bahasa target, silakan generate skenario dulu dari halaman depan.");
+            let story = getCurrentStory();
+            currentDuelTargetLang = story ? story.languageName : "English";
+            document.getElementById('duelModal').classList.remove('hidden');
+            if(document.getElementById('duelWord1').innerText === '...') generateNewDuel();
+        }
+        
+        function closeDuelModal() {
+            if (duelRec) { try { duelRec.stop(); } catch(e){} }
+            isDuelMicListening = false;
+            document.getElementById('duelMicBtn').classList.remove('bg-rose-500', 'animate-pulse');
+            document.getElementById('duelModal').classList.add('hidden');
+        }
+
+        async function generateNewDuel() {
+            document.getElementById('duelWord1').innerText = '...';
+            document.getElementById('duelWord2').innerText = '...';
+            document.getElementById('duelPhonetic1').innerText = '/../';
+            document.getElementById('duelPhonetic2').innerText = '/../';
+            document.getElementById('duelMeaning1').innerText = '...';
+            document.getElementById('duelMeaning2').innerText = '...';
+            document.getElementById('duelStatus').innerText = 'Mengunduh kata jebakan dari AI...';
+            
+            const sysPrompt = `Berikan 1 pasangan kata 'Minimal Pair' (mirip pengucapan tapi beda arti yang fatal/menjebak) dalam bahasa ${currentDuelTargetLang}. Jangan gunakan kata terlalu kotor. Format JSON WAJIB: {"word1": "kata1", "phonetic1": "/.../", "meaning1": "arti1", "word2": "kata2", "phonetic2": "/.../", "meaning2": "arti2"}`;
+            
+            try {
+                const res = await fetchGemini(`Beri 1 minimal pair ${currentDuelTargetLang}`, sysPrompt, true);
+                const data = JSON.parse(res);
+                document.getElementById('duelWord1').innerText = data.word1;
+                document.getElementById('duelPhonetic1').innerText = data.phonetic1;
+                document.getElementById('duelMeaning1').innerText = data.meaning1;
+                document.getElementById('duelWord2').innerText = data.word2;
+                document.getElementById('duelPhonetic2').innerText = data.phonetic2;
+                document.getElementById('duelMeaning2').innerText = data.meaning2;
+                document.getElementById('duelStatus').innerText = "Sentuh mic dan ucapkan keduanya berurutan!";
+            } catch(e) {
+                document.getElementById('duelStatus').innerText = "Gagal memuat. Coba ketuk Ganti Pasangan lagi.";
+            }
+        }
+
+        function startDuelMic() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition; 
+            if (!SpeechRec) return showCustomAlert("Browser Anda tidak mendukung Mic.");
+            
+            const micBtn = document.getElementById('duelMicBtn');
+            const status = document.getElementById('duelStatus');
+
+            if (isDuelMicListening) {
+                if (duelRec) { try { duelRec.stop(); } catch(e){} }
+                isDuelMicListening = false;
+                micBtn.classList.remove('bg-rose-500', 'animate-pulse');
+                status.innerText = "Dibatalkan. Sentuh mic untuk mencoba.";
+                return;
+            }
+
+            let story = getCurrentStory();
+            duelRec = new SpeechRec();
+            duelRec.lang = story ? story.languageCode : 'en-US';
+            duelRec.interimResults = false;
+
+            duelRec.onstart = () => { 
+                isDuelMicListening = true;
+                micBtn.classList.add('bg-rose-500', 'animate-pulse'); 
+                status.innerHTML = `Mendengarkan... Ucapkan: <b class="text-rose-600">${document.getElementById('duelWord1').innerText}</b> lalu <b class="text-blue-600">${document.getElementById('duelWord2').innerText}</b>`;
+            };
+            
+            duelRec.onresult = (e) => {
+                isDuelMicListening = false;
+                micBtn.classList.remove('bg-rose-500', 'animate-pulse'); 
+                const speech = e.results[0][0].transcript.toLowerCase();
+                const w1 = document.getElementById('duelWord1').innerText.toLowerCase();
+                const w2 = document.getElementById('duelWord2').innerText.toLowerCase();
+                
+                if (speech.includes(w1) && speech.includes(w2)) {
+                    status.innerHTML = `🔥 <span class="text-green-600 font-bold">SEMPURNA!</span> Anda berhasil mengucapkannya! <br><span class="text-xs font-normal text-slate-500">(Terdengar: "${speech}")</span>`;
+                } else if (speech.includes(w1) || speech.includes(w2)) {
+                    status.innerHTML = `⚠️ <span class="text-orange-500 font-bold">HAMPIR!</span> Hanya terdengar salah satu. <br><span class="text-xs font-normal text-slate-500">(Terdengar: "${speech}")</span>`;
+                } else {
+                    status.innerHTML = `❌ <span class="text-red-500 font-bold">GAGAL.</span> Pelafalan meleset dari target. <br><span class="text-xs font-normal text-slate-500">(Terdengar: "${speech}")</span>`;
+                }
+            };
+            
+            duelRec.onerror = (e) => { 
+                isDuelMicListening = false;
+                micBtn.classList.remove('bg-rose-500', 'animate-pulse'); 
+                status.innerText = `Terhenti (${e.error}). Coba ketuk mic lagi.`;
+            };
+            
+            try { duelRec.start(); } catch(e) { isDuelMicListening = false; }
+        }
+
+        window.onload = async () => {
+            await MediaDB.init(); setupPWA(); checkFirstVisit(); FlashbackTracker.updateBadge(); 
+            try { const stored = localStorage.getItem('polyglotReaderSaved_v1'); if (stored) savedStories = JSON.parse(stored); } catch (e) {}
+            
+            const savedLevel = localStorage.getItem('polyglot_saved_level'); if(savedLevel) { const cefrEl = document.getElementById('cefrLevel'); if (cefrEl) cefrEl.value = savedLevel; }
+
+            updateStorySelectUI(); renderStory();
+            
+            document.getElementById('storySelect')?.addEventListener('change', (e) => { 
+                if(e.target.value === 'open_playlist') { openPlaylist(); e.target.value = activeStoryId; } 
+                else { activeStoryId = e.target.value; renderStory(); } 
+            });
+
+            document.getElementById('cefrLevel')?.addEventListener('change', (e) => { localStorage.setItem('polyglot_saved_level', e.target.value); });
+        };
+    </script>
+</body>
+</html>
