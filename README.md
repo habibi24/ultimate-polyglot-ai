@@ -1,115 +1,216 @@
-# **Ultimate Polyglot AI — Context Reader Pro**
+<div align="center">
 
-A cutting-edge Single-Page Application (SPA) for immersive language learning. Built with HTML5, Vanilla JS, and the Gemini API — engineered to simulate real-world conversations, provide granular phonetic feedback, and dynamically adapt to the user's proficiency level (CEFR A1-C2).
+# 🌐 Ultimate Polyglot AI — Context Reader Pro
 
-Powers real-time speech evaluation, emotion-driven Text-to-Speech (TTS), hidden spaced repetition (Flashback), and procedural ambient audio — all served purely from the client side without relying on heavy frameworks.
+**Immersive AI-powered language learning. Real conversations. Real pronunciation. Real results.**
 
-## **Architecture**
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Gemini API](https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
-  User Client                                     Cloud Services  
-       |                                                |  
-       |  Mic Input (Web Speech API)                    |  
-       |  Text Prompt                                   |  
-       v                                                v  
-  \+-----------------------+                    \+-----------------------+  
-  |  Browser Engine       | \--- JSON Payload \-\>|  Google Gemini API    |  
-  |  (index.html)         | \<- TTS / JSON Data |  (gemini-2.5-flash)   |  
-  \+-----------------------+                    \+-----------------------+  
-       |  
-       \+---\> UI Rendering (Tailwind CSS, DOM Manipulation)  
-       \+---\> Pronunciation Analysis (Color-coded scaffolding)  
-       \+---\> Audio Playback (Web Audio API Procedural Sound)  
-       \+---\> Persistence (IndexedDB for Audio, LocalStorage for JSON)
+---
 
-Data flow: The user inputs a prompt or uses the microphone. The browser sends a strictly structured JSON generation request to the **Gemini API**. Gemini returns the conversational script, emotion cues, and translations. If Cloud Voice is enabled, the app fetches **Gemini Neural TTS** audio blobs and caches them in **IndexedDB** for zero-latency playback. The **Web Speech API** listens to the user's reading and matches it against the generated transcript for granular, real-time visual feedback.
+<div align="center">
+  <img src="https://drive.google.com/uc?export=view&id=1ouUv8gFGurSrVziNgeyOlIg436v30ww4" alt="Ultimate Polyglot AI - Main Interface" width="700"/>
+  <p><em>Gambar 1: Interface utama menampilkan real-time pronunciation feedback dengan color-coded scaffolding</em></p>
+</div>
 
-## **Tech Stack**
+---
+
+## 🎬 Demo Video
+
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=wfeQGhMMRu0">
+    <img src="https://img.youtube.com/vi/wfeQGhMMRu0/maxresdefault.jpg" alt="Watch Demo on YouTube" width="700"/>
+  </a>
+  <p><em>Klik gambar untuk menonton demo lengkap di YouTube</em></p>
+</div>
+
+</div>
+
+---
+
+## ✨ What Is This?
+
+**Ultimate Polyglot AI** is a fully client-side Single-Page Application for immersive language learning — no servers, no frameworks, no install required. Powered by the **Gemini 2.5 Flash** API, it simulates real-world conversations, delivers granular phonetic feedback, and dynamically adapts to the learner's CEFR level (A1–C2).
+
+> _Born from the idea that entertainment — cartoons, music, storytelling — is the most natural way to acquire a language._
+
+---
+
+## 🗺️ Architecture
+
+```
+  User Client                                      Cloud Services
+       │                                                 │
+       │  🎤 Mic Input (Web Speech API)                  │
+       │  💬 Text Prompt                                  │
+       ▼                                                 ▼
+  ┌─────────────────────┐                   ┌────────────────────────┐
+  │   Browser Engine    │ ── JSON Payload ──▶│   Google Gemini API    │
+  │    (index.html)     │ ◀── TTS / JSON ───│  (gemini-2.5-flash)    │
+  └─────────────────────┘                   └────────────────────────┘
+       │
+       ├──▶ 🎨 UI Rendering       (Tailwind CSS, DOM Manipulation)
+       ├──▶ 🗣️ Pronunciation Engine (Color-coded Scaffolding)
+       ├──▶ 🔊 Audio Playback      (Web Audio API Procedural Sound)
+       └──▶ 💾 Persistence         (IndexedDB + LocalStorage)
+```
+
+**Data Flow:** User speaks or types → Browser sends a structured JSON request to Gemini → Gemini returns the script, emotion cues, and translations → If Cloud Voice is enabled, Neural TTS audio blobs are fetched and cached in **IndexedDB** for zero-latency playback → **Web Speech API** matches the user's reading to the transcript for real-time visual feedback.
+
+---
+
+## 🛠️ Tech Stack
 
 | Layer | Technology |
-| :---- | :---- |
-| **Frontend UI** | HTML5, CSS3, Tailwind CSS (via CDN) |
+|---|---|
+| **Frontend UI** | HTML5, CSS3, Tailwind CSS (CDN) |
 | **Core Logic** | Vanilla JavaScript (ES6+) |
-| **AI Framework** | Google Gemini API (gemini-2.5-flash-preview) |
-| **Speech Recognition** | Web Speech API (SpeechRecognition) |
-| **Voice Synthesis** | Gemini Neural TTS, SpeechSynthesisUtterance |
-| **Audio Processing** | Web Audio API (Procedural Ambient Sound Generation) |
-| **Data Persistence** | Browser LocalStorage, IndexedDB (Audio Blob Caching) |
+| **AI Engine** | Google Gemini API (`gemini-2.5-flash-preview`) |
+| **Speech Recognition** | Web Speech API (`SpeechRecognition`) |
+| **Voice Synthesis** | Gemini Neural TTS + `SpeechSynthesisUtterance` |
+| **Audio Processing** | Web Audio API (Procedural Ambient Sound) |
+| **Data Persistence** | Browser `LocalStorage` + `IndexedDB` (Audio Blob Cache) |
 
-## **Installation & Setup**
+---
 
-**1\. Clone the repository**
+## 🚀 Getting Started
 
-git clone \[https://github.com/your-username/ultimate-polyglot-ai.git\](https://github.com/your-username/ultimate-polyglot-ai.git)  
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/SMHasyim24/ultimate-polyglot-ai.git
 cd ultimate-polyglot-ai
+```
 
-**2\. Configure API Key**
+### 2. Configure Your API Key
 
-Open index.html using your preferred code editor. Locate the API variable near the bottom of the script and set your Gemini API key:
+Open `index.html` in your code editor. Near the bottom of the `<script>` block, locate and replace the placeholder:
 
-// Replace with your actual Google AI Studio API Key  
-const apiKey \= "INSERT\_YOUR\_GEMINI\_API\_KEY\_HERE";
+```javascript
+// Replace with your actual Google AI Studio API Key
+// Get one free at: https://aistudio.google.com/app/apikey
+const apiKey = "INSERT_YOUR_GEMINI_API_KEY_HERE";
+```
 
-**3\. Run the application**
+### 3. Run the App
 
-Since this is a fully client-side Single-Page Application, there is no need to spin up a server, Node.js, or Docker. Simply open the file in your browser:
+No server, no Node.js, no Docker — just open the file:
 
-\# On macOS  
+```bash
+# macOS
 open index.html
 
-\# On Windows  
+# Windows
 start index.html
 
-\# Or simply double-click index.html in your File Explorer
+# Linux
+xdg-open index.html
+```
 
-**Note:** For the best Speech-to-Text (Microphone) experience, it is highly recommended to run this application on **Google Chrome**.
+> 💡 **Tip:** Use **Google Chrome** for the best Speech-to-Text (microphone) experience, as Web Speech API support is most stable there.
 
-## **Screenshots**
+---
 
-Here is a preview of the **Interactive Deep Contextual Analysis** feature, powered by our AI ✨:
+## 🎯 Core Features
 
-## **Core Features**
+### 🤖 Adaptive AI Scenario Generator
+Dynamically adjusts vocabulary and grammar complexity to the user's **CEFR level (A1–C2)** and selected scene mood. Randomized **Micro-Context injections** guarantee 100% unique stories and prevent repetitive AI output.
 
-* **Adaptive AI Scenario Generator:** Dynamically adjusts vocabulary and grammar to the user's CEFR Level (A1-C2) and scene mood. Guarantees 100% unique stories with randomized Micro-Context injections to prevent AI laziness.  
-* **Interactive Pronunciation Scaffolding:** Evaluates speech in real-time with visual indicators:  
-  * 🟩 **Green:** Correct pronunciation.  
-  * 〰️ **Orange Wavy:** Extra or mispronounced word.  
-  * ⬜ **Gray Strikethrough:** Missed target word.  
-* **Minimal Pair Protection System:** Detects vowel pronunciation shifts (e.g., *sheet* vs *ship*) and provides educational phonetic warnings.  
-* **Hidden Spaced Repetition (Flashback):** Missed words are stored locally and reappear naturally in future AI-generated dialogues to improve long-term memory.  
-* **Live Call AI & Roleplay:** Features a "Smart Wait" system where the AI initiates conversation if the user is silent, alongside interactive turn-taking simulations.  
-* **Gen-Z Slang Translation:** Converts stiff formal dialogues into casual Indonesian street slang (e.g., "I'm broke" → "Gue lagi bokek").
+### 🗣️ Interactive Pronunciation Scaffolding
+Evaluates speech in real-time with color-coded visual indicators:
 
-## **The Origin Story & Inspiration**
+| Indicator | Meaning |
+|---|---|
+| 🟩 **Green** | Correct pronunciation |
+| 🟥 **Red** | Extra or mispronounced word |
+| ⬜ **Gray Strikethrough** | Missed target word |
 
-The idea behind Ultimate Polyglot AI was inspired by personal experiences with language exposure through entertainment media.
+### 🛡️ Minimal Pair Protection System
+Detects critical vowel shifts (e.g., *sheet* vs *ship*) and automatically triggers educational phonetic warnings before they become bad habits.
 
-Growing up, I often watched older animated shows and television programs that featured simple English subtitles and conversational dialogue. Repeated exposure to those conversations gradually helped build natural familiarity with vocabulary and sentence structures. Another major influence came from listening to songs from different languages and cultures. These experiences highlighted how emotional context, repetition, immersion, and entertainment can make language learning feel more natural and memorable.
+### 🔁 Hidden Spaced Repetition (Flashback)
+Missed words are silently stored locally and **reinjected naturally** into future AI-generated dialogues — spaced repetition without the flashcard grind.
 
-Those experiences became the foundation of Ultimate Polyglot AI — an attempt to combine immersive storytelling, AI-driven interaction, pronunciation training, and emotional engagement into a modern adaptive language learning experience.
+### 📞 Live Call AI & Roleplay
+Features a **Smart Wait** state machine — if the user goes silent, the AI initiates. Supports full interactive turn-taking simulations for realistic conversational practice.
 
-### **🎓 Built on a Solid AI Foundation**
+### 🇮🇩 Gen-Z Slang Translation
+Converts stiff formal dialogues into casual **Indonesian street slang**:
+> "I'm broke" → **"Gue lagi bokek"**
 
-The advanced prompt engineering and AI architectural design behind this application were made possible by the foundational knowledge acquired from the **Career Essentials in Generative AI by Microsoft and LinkedIn** certification (Completed by S.M. Hasyim on May 15, 2026). The principles learned from this pathway allowed us to push the Gemini API to its absolute limits.
+---
 
-## **Engineering Challenges**
+## 📸 Feature Gallery
 
-Developing this application involved solving several unique linguistic and technical hurdles:
+### Adaptive Scenario Selection
+<div align="center">
+  <img src="https://drive.google.com/uc?export=view&id=17wDVerzsH3tMD5VlD1i5978j9-uA2EsU" alt="Scenario Selection Screen" width="600"/>
+  <p><em>Gambar 2: Pilih tingkat kesulitan CEFR (A1-C2), mood scene, dan konteks untuk dialog yang unik dan relevan</em></p>
+</div>
 
-1. **The Tragedy of the "Robot Voice":** Initially, the AI's TTS sounded stiff. We implemented *Native Emotion Injection* prompting to force the AI to change its "vocal cords," ensuring it sounded like a native speaker with raw emotions.  
-2. **The War Against "AI Laziness":** Generative AI often defaults to repetitive scenarios. To break this *Template Syndrome*, we pushed the AI's temperature to extreme levels (1.7) and injected forced, hidden *Plot Twists*.  
-3. **The Live Call Delay Mystery:** Early versions of the *Live Call* suffered from severe latency (*Racing Condition*). We solved this by engineering a *Smart Wait* state machine and *Abort Controllers* for seamless turn-taking.
+### Real-Time Pronunciation Feedback
+<div align="center">
+  <img src="https://drive.google.com/uc?export=view&id=1GrKtxE6neruGMnn_pW2zMMbQ0iybTSyj" alt="Pronunciation Feedback" width="600"/>
+  <p><em>Gambar 3: Warna-coded scaffolding menunjukkan pengucapan yang benar (hijau), berlebihan (orange wavy), atau terlewat (abu-abu strikethrough)</em></p>
+</div>
 
-## **Future Roadmap**
+### Live AI Conversation
+<div align="center">
+  <img src="https://drive.google.com/uc?export=view&id=1IlzOrSKoWqCSvZtfh_GTLwfPjSETR5AP" alt="Live Call AI Interface" width="600"/>
+  <p><em>Gambar 4: Interactive roleplay dengan Smart Wait system — AI otomatis memulai percakapan jika user diam</em></p>
+</div>
 
-* \[ \] Multi-language support (Japanese JLPT, Mandarin HSK mappings).  
-* \[ \] Progressive Web App (PWA) integration for native-like mobile installation.  
-* \[ \] Gamification elements (Daily Streaks, XP system).  
-* \[ \] OpenAI Whisper API integration for phoneme-level pronunciation scoring.
+### Progress & Flashback Dashboard
+<div align="center">
+  <img src="https://drive.google.com/uc?export=view&id=1yTBds4_iXHyu1X85xhqhbPiMvqg1At29" alt="Spaced Repetition Dashboard" width="600"/>
+  <p><em>Gambar 5: Track progress pembelajaran</em></p>
+</div>
 
-## **Author**
+---
 
-Developed by **S.M. Hasyim**.
+## ⚙️ Engineering Challenges
 
-## **License**
+### 🎭 The "Robot Voice" Problem
+Early TTS output sounded stiff and unnatural. Solved with **Native Emotion Injection** prompting — forcing the model to adopt emotional vocal cues, making it sound like a native speaker.
 
-This project was developed for educational and portfolio purposes.
+### 😴 The "AI Laziness" War
+Generative AI defaults to repetitive, templated scenarios. Defeated with extreme **temperature tuning (1.7)** and forced hidden **Plot Twist injections** to break the pattern.
+
+### ⏱️ The Live Call Delay Mystery
+Early Live Call suffered severe latency from race conditions. Resolved by engineering a **Smart Wait state machine** paired with **Abort Controllers** for seamless turn-taking.
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Multi-language support (Japanese JLPT, Mandarin HSK mappings)
+- [ ] Progressive Web App (PWA) for native-like mobile installation
+- [ ] Gamification: Daily Streaks & XP system
+- [ ] OpenAI Whisper API integration for phoneme-level pronunciation scoring
+
+---
+
+## 💡 The Origin Story
+
+The idea behind Ultimate Polyglot AI was born from a simple observation: **entertainment is the most effective language teacher**.
+
+Growing up, exposure to English through animated shows with simple subtitles built vocabulary naturally. Music from different cultures created emotional anchors for unfamiliar words. These experiences proved that immersion, repetition, and emotional engagement make language learning feel effortless.
+
+Ultimate Polyglot AI combines all of that — AI-driven storytelling, pronunciation training, and emotional engagement — into one adaptive modern experience.
+
+> 🎓 The advanced prompt engineering behind this app was built on foundations from the **Career Essentials in Generative AI** certification by Microsoft & LinkedIn — completed by **S.M. Hasyim** on May 15, 2026.
+
+---
+
+## 👤 Author
+
+Developed with passion by **S.M. Hasyim**
+
+---
+
+## 📄 License
+
+This project was developed for **educational and portfolio purposes**.
